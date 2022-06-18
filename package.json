@@ -1,0 +1,19 @@
+{
+  "name": "navity",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install": "cd api && npm i",
+    "postinstall": "cd frontend && npm i",
+    "start": "cd api && npm start",
+    "start:react": "cd frontend && npm start",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": "12.x"
+  }
+}
