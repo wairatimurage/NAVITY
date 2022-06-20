@@ -6,7 +6,7 @@ const institutionModel = new Schema({
   name: { type: String },
   email: { type: String },
   liscenced: { type: Boolean },
-  liscenceExpiry: {type: Date},
+  liscenceExpiry: { type: Date },
   // training: { type: Array },
   mailingList: { type: Boolean },
   telephone: { type: Array },
@@ -18,6 +18,7 @@ const institutionModel = new Schema({
   socials: { type: Object },
   locations: { type: Array },
   reviews: { type: Array },
+  wallet: { type: Object },
 });
 
 // liscenced: { status: {type: Boolean}, expiry: {type: Date}},

@@ -9,6 +9,7 @@ const enthusiastModel = new Schema({
   mailingList: { type: Boolean },
   password: { type: String },
   telephone: { type: String },
+  wallet: { type: Object },
 });
 
 module.exports = mongoose.model("Enthusiast", enthusiastModel);

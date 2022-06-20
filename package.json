@@ -7,6 +7,7 @@
     "install": "cd api && npm i",
     "postinstall": "cd frontend && npm i",
     "start": "cd api && npm start",
+    "api:dev": "cd api && npm run start:dev",
     "start:react": "cd frontend && npm start",
     "build": "cd frontend && npm run build"
   },
@@ -14,6 +15,6 @@
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": "12.x"
+    "node": "16.x"
   }
 }

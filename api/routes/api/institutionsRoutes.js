@@ -1,6 +1,6 @@
 const express = require("express");
 const passport = require("passport");
-const { checkUser } = require("../utility");
+const { checkUser } = require("../../utility");
 const { handleResponseErrors } = require("./handleResponseCases");
 
 const institutionRoutes = (Institution) => {

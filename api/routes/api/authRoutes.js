@@ -1,6 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const { getUserByEmail } = require("../utility");
+const { getUserByEmail } = require("../../utility");
 const { handleResponseErrors } = require("./handleResponseCases");
 
 const jwt = require("jsonwebtoken");
@@ -9,12 +9,12 @@ const fs = require("fs");
 const passport = require("passport");
 
 
-const pathToKey = path.join(__dirname, "../cryptography/id_rsa_priv.pem");
+const pathToKey = path.join(__dirname, "../../cryptography/id_rsa_priv.pem");
 const PRIV_KEY = fs.readFileSync(pathToKey, "utf-8");
 const models = {
-  pilot: require("../models/pilotModel"),
-  enthusiast: require("../models/enthusiastModel"),
-  institution: require("../models/institutionModel"),
+  pilot: require("../../models/pilotModel"),
+  enthusiast: require("../../models/enthusiastModel"),
+  institution: require("../../models/institutionModel"),
 };
 
 const issueJwt = (id) => {
@@ -29,7 +29,6 @@ const issueJwt = (id) => {
   });
   return { token: `Bearer ${signedToken}`, expires: expiresIn };
 };
-
 
 const authRoutes = () => {
   const authRouter = express.Router();
@@ -74,7 +73,7 @@ const authRoutes = () => {
       });
       // TODO: add instance method to generate a new  id
       user.save((err) => console.log("error", err));
-      // const jwtToken = issueJwt(user._id);
+      const jwtToken = issueJwt(user._id);
       const returnUser = user.toJSON();
       delete returnUser.password;
       // delete returnUser._id;

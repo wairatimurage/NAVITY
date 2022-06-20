@@ -19,6 +19,7 @@ const pilotModel = new Schema({
   bio: { type: Object },
   location: { type: Array },
   reviews: { type: Array },
+  wallet: { type: Object },
 });
 // TODO : add instance method to generate id
 // pilotModel.methods.insertId= function(){
