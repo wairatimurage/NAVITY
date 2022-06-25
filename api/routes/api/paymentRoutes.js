@@ -1,11 +1,12 @@
 const express = require("express");
-const passport = require("passport");
 const path = require("path");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
-const { calculateOrderTotals, CustomError, checkAuth } = require("../utility");
-const { usedRates } = require("../utilityLists");
-const { handlePaymentErrors } = require("../errorHandling/errorLogger");
+const { CustomError, checkAuth } = require("../../utilities/utility");
+const {
+  handlePaymentErrors,
+  handleServerErrors,
+} = require("../../utilities/errorHandling");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const flutterwaveCall = async (_data) => {
@@ -21,8 +22,8 @@ const flutterwaveCall = async (_data) => {
     },
     customer: _data.customer,
     customizations: {
-      title: "Sahara Order Payment.",
-      description: "Complete ypur order from sahara through payment.",
+      title: "Sahara booking Payment.",
+      description: "Complete ypur booking from sahara through payment.",
       logo: _data.logo_url,
     },
   });
@@ -43,6 +44,7 @@ const flutterwaveCall = async (_data) => {
       throw new CustomError(_data.message, "paymentError");
     })
     .catch((_err) => {
+      console.log(_err);
       throw new CustomError(
         "Problem connecting to Payment System.",
         "paymentError"
@@ -69,7 +71,7 @@ const flutterwaveVerification = async (_id) => {
     });
 };
 
-const paymentRoutes = (Payment, Order, Rates) => {
+const paymentRoutes = (Payment, Booking) => {
   const paymentRouter = express.Router();
 
   paymentRouter.route("/").post(checkAuth, async (req, res) => {
@@ -78,28 +80,16 @@ const paymentRoutes = (Payment, Order, Rates) => {
     try {
       const _user = req.user.toJSON();
       const _refId = uuidv4();
-      const rates = await Rates.findOne({ class: "rates" }).then((_rates) => {
-        return usedRates
-          .map((_val) => {
-            return [_val.replace("USD", ""), _rates.quotes[_val]];
-          })
-          .reduce(
-            (_init, _current) => ({ ..._init, [_current[0]]: _current[1] }),
-            {}
-          );
-      });
 
       const _newPayment = new Payment({
         clientId: req.body.clientDetails.id,
-        order: { ...req.body, exchangeRates: rates },
+        booking: { ...req.body },
         refId: _refId,
         initiatedAt: new Date(),
         completed: false,
-        currency:
-          _origin === process.env.APPAREL_APP ? req.body.currency : "KES",
+        currency: "KES",
         payment: { method: req.body.payment.method },
-        totalPayable: calculateOrderTotals(req.body.items, req.body.currency)
-          .payable,
+        totalPayable: req.body.totalPayable,
       });
       //   check for duplicate transactions
       const openPayment = async () => {
@@ -144,6 +134,7 @@ const paymentRoutes = (Payment, Order, Rates) => {
           },
           paymentMethod: req.body.payment.method,
           currency: _newPayment.currency,
+          // TODO: configure redirect url and logo
           redirect_url: _origin + "/cart/" + _newPayment._id,
           logo: _host + "sahara/logo.jpeg",
           totalPayable: _newPayment.totalPayable,
@@ -159,6 +150,7 @@ const paymentRoutes = (Payment, Order, Rates) => {
         Payment.findOneAndUpdate(
           { refId: _savedPayment.refId },
           { $set: _updatedPayment }
+          // eslint-disable-next-line no-unused-vars
         ).then((_res) => {
           // console.log("saved: ", _res.payment.link);
           return res
@@ -184,22 +176,21 @@ const paymentRoutes = (Payment, Order, Rates) => {
         const _openPayments = _results.find(
           (_payment) =>
             _payment.completed &&
-            _payment.totalPayable ===
-              calculateOrderTotals(req.body.items, req.body.currency).payable
+            _payment.totalPayable === req.body.totalPayable
         );
         if (_openPayments) {
           _openPayments.toJSON();
-          _openPayments.order.payment.refId = _openPayments.refId;
-          await Order.findOne({ "payment.refId": _openPayments.refId }).then(
+          _openPayments.booking.payment.refId = _openPayments.refId;
+          await Booking.findOne({ "payment.refId": _openPayments.refId }).then(
             (_res) => {
               if (_res) {
                 return res.status(201).json({
                   message:
-                    "An order has already been placed with similar details. Place new order or contact support for assistance",
-                  order: _res,
+                    "An booking has already been placed with similar details. Place new booking or contact support for assistance",
+                  booking: _res,
                 });
               }
-              return res.status(201).json(_openPayments.order);
+              return res.status(201).json(_openPayments.booking);
             }
           );
         } else {
@@ -217,6 +208,7 @@ const paymentRoutes = (Payment, Order, Rates) => {
         });
       });
   });
+  
   paymentRouter.route("/:id").post(checkAuth, async (req, res) => {
     Payment.findById(req.params.id)
       .then(async (_result) => {
@@ -231,9 +223,9 @@ const paymentRoutes = (Payment, Order, Rates) => {
           };
           await _result.save((_err, _savedData) => {
             if (_err) throw _err;
-            _savedData.order.payment.refId = _savedData.refId;
+            _savedData.booking.payment.refId = _savedData.refId;
             // console.log(_savedData);
-            return res.status(201).json(_result.order);
+            return res.status(201).json(_result.booking);
           });
         } else {
           Payment.findOne(
@@ -241,15 +233,15 @@ const paymentRoutes = (Payment, Order, Rates) => {
             async (_err, _res) => {
               if (_err) throw _err;
               if (_res) {
-                // TODO: find order
-                await Order.findOne({
+                // TODO: find booking
+                await Booking.findOne({
                   "payment.refId": _result.refId,
                 }).then((_res) => {
                   if (_res) {
                     return res.status(201).json({
                       message:
-                        "An order has already been placed with similar details. Place new order or contact support for assistance",
-                      order: _res,
+                        "An booking has already been placed with similar details. Place new booking or contact support for assistance",
+                      booking: _res,
                     });
                   }
                   return res.status(201).json({

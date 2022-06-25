@@ -1,3 +1,5 @@
+const passport = require("passport");
+
 const models = {
   pilot: require("../models/pilotModel"),
   enthusiast: require("../models/enthusiastModel"),
@@ -61,9 +63,16 @@ function checkUser(req, res, next) {
         .json({ message: "You do not have permision to make this request" });
 }
 
+const checkAuth = async (req, res, next) => {
+  const _token = req.headers.authorization;
+  if (_token.split(" ").length === 2) {
+    return passport.authenticate("jwt", { session: false })(req, res, next);
+  }
+};
 
 module.exports = {
   checkUser,
   getUserByEmail,
   getUserById,
+  checkAuth,
 };

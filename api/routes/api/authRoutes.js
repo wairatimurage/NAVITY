@@ -1,13 +1,12 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const { getUserByEmail } = require("../../utility");
+const { getUserByEmail } = require("../../utilities/utility");
 const { handleResponseErrors } = require("./handleResponseCases");
 
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs");
 const passport = require("passport");
-
 
 const pathToKey = path.join(__dirname, "../../cryptography/id_rsa_priv.pem");
 const PRIV_KEY = fs.readFileSync(pathToKey, "utf-8");
@@ -78,7 +77,6 @@ const authRoutes = () => {
       delete returnUser.password;
       // delete returnUser._id;
       res.header("Authorization", jwtToken.token).json(returnUser);
-
     } catch (error) {
       res.json({ error: error.message, code: error.name });
     }

@@ -17,7 +17,7 @@ const port = process.env.PORT || process.env.LOCAL_PORT || 2000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // local imports
-const initializePassport = require("./passport-config");
+const initializePassport = require("./utilities/passport-config");
 const sessionStore = new MongoStore({
   mongooseConnection: mongoose.connection,
   collection: "sessions",
