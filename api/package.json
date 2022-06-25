@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": " set DEBUG =* & nodemon server.js",
-    "start:dev": "NODE_ENV=production node server.js",
-    "start:prod": "NODE_ENV=development set DEBUG =* & nodemon server.js"
+    "start:dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start:prod": "cross-env NODE_ENV=production set DEBUG =* & nodemon server.js",
+    "samp": "nodemon server.js"
   },
   "keywords": [],
   "author": "",

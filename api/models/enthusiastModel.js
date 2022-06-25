@@ -10,6 +10,7 @@ const enthusiastModel = new Schema({
   password: { type: String },
   telephone: { type: String },
   wallet: { type: Object },
+  avatar: { type: String },
 });
 
 module.exports = mongoose.model("Enthusiast", enthusiastModel);

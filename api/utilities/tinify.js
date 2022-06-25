@@ -5,6 +5,7 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 function tinifyImage(baseString, destinationPath) {
   tinify.key = process.env.TINIFY_API_KEY;
+  // eslint-disable-next-line no-undef
   const buf = Buffer.from(baseString, "base64");
 
   return new Promise((resolve, reject) =>
@@ -22,6 +23,7 @@ function tinifyImage(baseString, destinationPath) {
 function tinifyBase64(baseString) {
   // returns a base 64 string result
   tinify.key = process.env.TINIFY_API_KEY;
+  // eslint-disable-next-line no-undef
   const buf = Buffer.from(baseString, "base64");
 
   return new Promise((resolve, reject) =>

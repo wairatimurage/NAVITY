@@ -14,7 +14,7 @@ const pilotModel = new Schema({
   telephone: { type: String },
   password: { type: String },
   website: { type: String },
-  logo: { type: String },
+  avatar: { type: String },
   socials: { type: Object },
   bio: { type: Object },
   location: { type: Array },

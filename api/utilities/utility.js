@@ -1,7 +1,7 @@
 const models = {
-  pilot: require("./models/pilotModel"),
-  enthusiast: require("./models/enthusiastModel"),
-  institution: require("./models/institutionModel"),
+  pilot: require("../models/pilotModel"),
+  enthusiast: require("../models/enthusiastModel"),
+  institution: require("../models/institutionModel"),
 };
 
 const getUserByEmail = (email) => {
@@ -60,6 +60,7 @@ function checkUser(req, res, next) {
         .status(401)
         .json({ message: "You do not have permision to make this request" });
 }
+
 
 module.exports = {
   checkUser,

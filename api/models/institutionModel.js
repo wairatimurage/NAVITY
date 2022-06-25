@@ -12,7 +12,7 @@ const institutionModel = new Schema({
   telephone: { type: Array },
   password: { type: String },
   website: { type: String },
-  logo: { type: String },
+  avatar: { type: String },
   contact: { type: Array },
   bio: { type: Object },
   socials: { type: Object },
