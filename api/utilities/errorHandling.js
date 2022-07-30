@@ -42,9 +42,13 @@ const handlePaymentErrors = (_err) => {
   console.log(_err);
 };
 
+const handleStorageErrors = (_err) => {
+  console.log(_err);
+};
 module.exports = {
   CustomError,
   handleResponseErrors,
   handleServerErrors,
   handlePaymentErrors,
+  handleStorageErrors,
 };

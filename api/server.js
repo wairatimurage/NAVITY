@@ -45,14 +45,14 @@ mongoose.connection;
 app.use(morgan("tiny"));
 app.use(express.json());
 // cors settings
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header(
-//     `Access-Control-Allow-Headers`,
-//     `Origin, X-Requsted-With, Content-Type, Accept, Authorization`
-//   );
-//   next();
-// });
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    `Access-Control-Allow-Headers`,
+    `Origin, X-Requsted-With, Content-Type, Accept, Authorization`
+  );
+  next();
+});
 
 // console.log("secret", process.env.CLIENT_ID);
 // calling pasport
@@ -78,5 +78,4 @@ app.use(bodyParser.json());
 app.use("", express.static(path.join(__dirname, "../frontend/build")));
 
 app.use(require("./routes"));
-
 app.listen(port, () => debug(`Listening on port: ${chalk.green(port)}`));

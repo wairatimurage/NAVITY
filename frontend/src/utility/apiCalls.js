@@ -9,31 +9,35 @@ const appendHeaders = () => {
   return headers;
 };
 
+const apiUrl = process.env.REACT_APP_API_URL || "";
+
 export const signUp = (user) => {
-  return fetch(`/auth/register`, {
+  console.log("user: ", user);
+  return fetch(`${apiUrl}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(user),
   }).then((response) => {
+    
     storeToken(response);
     return response.json();
   });
 };
 
 export const fetchPilots = () => {
-  return fetch(`/api/pilots`)
+  return fetch(`${apiUrl}/api/pilots`)
     .then((repsonse) => repsonse.json())
     .catch((err) => console.log(err));
 };
 
 export const fetchInstitutions = () => {
-  return fetch(`/api/institutions`)
+  return fetch(`${apiUrl}/api/institutions`)
     .then((repsonse) => repsonse.json())
     .catch((err) => console.log(err));
 };
 
 export const searchRegistry = (accountType, searchQuery) => {
-  return fetch(`api/${accountType}/search`, {
+  return fetch(`${apiUrl}/api/${accountType}/search`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(searchQuery),
@@ -41,7 +45,7 @@ export const searchRegistry = (accountType, searchQuery) => {
 };
 
 export const filterRegistryBy = (accountType, filterQuery) => {
-  return fetch(`api/${accountType}/filter`, {
+  return fetch(`${apiUrl}/api/${accountType}/filter`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(filterQuery),
@@ -49,13 +53,13 @@ export const filterRegistryBy = (accountType, filterQuery) => {
 };
 
 export const fetchProfile = (accountType, id) => {
-  return fetch(`/api/${accountType}/${id}`)
+  return fetch(`${apiUrl}/api/${accountType}/${id}`)
     .then((response) => response.json())
     .catch((err) => console.log(err));
 };
 
 export const editProfile = (accountType, id, editValues) => {
-  return fetch(`/api/${accountType}/${id}`, {
+  return fetch(`${apiUrl}/api/${accountType}/${id}`, {
     method: "PATCH",
     headers: appendHeaders(),
     body: JSON.stringify(editValues),
@@ -63,7 +67,7 @@ export const editProfile = (accountType, id, editValues) => {
 };
 
 export const Login = (loginDetails) => {
-  return fetch(`/auth/login`, {
+  return fetch(`${apiUrl}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(loginDetails),
@@ -75,14 +79,14 @@ export const Login = (loginDetails) => {
 
 export const logout = () => {
   window.localStorage.removeItem("token");
-  return fetch("/auth/logout", {
+  return fetch(`${apiUrl}/auth/logout`, {
     method: "DELETE",
     headers: appendHeaders(),
   }).then((response) => response);
 };
 
 export const fetchCurrentUser = () => {
-  return fetch("/auth/current-user", {
+  return fetch(`${apiUrl}/auth/current-user`, {
     headers: appendHeaders(),
   })
     .then((response) => response.json())
@@ -90,7 +94,7 @@ export const fetchCurrentUser = () => {
 };
 
 export const getQuotes = (quoteRequest) => {
-  return fetch(`api/quotes`, {
+  return fetch(`${apiUrl}/api/quotes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(quoteRequest),

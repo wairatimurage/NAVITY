@@ -58,6 +58,7 @@ const nameLabel = {
   pilot: "Pilot / Company Name",
   institution: "Institution Name",
 };
+
 const SignUp = ({ history }) => {
   const [user, setUser] = useState({});
   const [currentBox, setCurrentBox] = useState("accountType");
@@ -69,6 +70,7 @@ const SignUp = ({ history }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     setCurrentBox("signupComplete");
+    console.log("s-user: ", user);
     signUp(user)
       .then((response) =>
         response && response._id

@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 const path = require("path");
 const { tinifyBase64 } = require("./tinify");
-const { handleStorageErrors } = require("./errorHandling/errorLogger");
+const { handleStorageErrors } = require("./errorHandling");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const s3 = new AWS.S3({

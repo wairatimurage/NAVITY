@@ -12,7 +12,7 @@ const Navbar = (props) => {
       setCurrentUser(data);
     });
   }, [window.location]);
-  console.log(window.location);
+
   const handleLogout = () => {
     props.toggleDropdown();
     logout()

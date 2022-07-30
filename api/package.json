@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.1167.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
@@ -32,6 +33,7 @@
     "passport-local": "^1.0.0",
     "passport-oauth2": "^1.5.0",
     "request": "^2.88.2",
+    "tinify": "^1.6.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

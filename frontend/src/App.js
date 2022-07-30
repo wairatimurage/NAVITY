@@ -14,6 +14,7 @@ import CardList from "./components/CardList";
 import AboutPage from "./components/About";
 import Footer from "./components/shared/Footer";
 import EditProfile from "./components/Profile/EditProfile";
+import Posts from "./components/Posts";
 
 function App() {
   const [toggleState, setToggleState] = useState(false);
@@ -44,10 +45,11 @@ function App() {
           <Route path="/login" component={Login} />
           <Route path="/sign-up" component={SignUp} />
           <Route path="/about" component={AboutPage} />
-          <Route path="/password-recovery" component={PasswordRecovery} />
+          <Route path="/passwpord-recovery" component={PasswordRecovery} />
           <Route path="/completion" component={SignupRecoveryCompletion} />
           <Route exact path="/pilots" component={CardList} />
           <Route exact path="/institutions" component={CardList} />
+          <Route exact path="/info-hub" component={Posts} />
           <Route
             path="/profile/:accountType/edit/:id"
             component={EditProfile}

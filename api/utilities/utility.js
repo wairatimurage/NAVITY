@@ -70,9 +70,21 @@ const checkAuth = async (req, res, next) => {
   }
 };
 
+const verifyAdmin = (req, res, next) => {
+  // TODO:verify account is activated
+  if (req.user.role === "admin" && req.user.status === "activated") {
+    return next();
+  }
+  return res.status(401).json({
+    errorMessage: "You are not authorized to carry out this activity",
+    code: "unAuthorized",
+  });
+};
+
 module.exports = {
   checkUser,
   getUserByEmail,
   getUserById,
   checkAuth,
+  verifyAdmin,
 };
