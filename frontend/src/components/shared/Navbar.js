@@ -184,6 +184,31 @@ const Navbar = (props) => {
             </svg>
             Settings
           </Link>
+          <Link
+            to={`/bookings/${currentUser._id}`}
+            onClick={props.toggleDropdown}
+          >
+            <svg
+              style={{
+                enableBackground: "new 0 0 478.703 478.703",
+                width: ".9rem",
+                height: ".9rem",
+                margin: "0 .5rem -.2rem 0",
+              }}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              ></path>
+            </svg>
+            My Bookings
+          </Link>
           <Link to="" onClick={handleLogout}>
             <svg
               viewBox="0 0 64 64"

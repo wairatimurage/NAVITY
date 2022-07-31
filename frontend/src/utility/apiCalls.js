@@ -18,7 +18,6 @@ export const signUp = (user) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(user),
   }).then((response) => {
-    
     storeToken(response);
     return response.json();
   });
@@ -99,4 +98,18 @@ export const getQuotes = (quoteRequest) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(quoteRequest),
   }).then((response) => response.json());
+};
+
+export const prepaidDetails = (_id) => {
+  return fetch(apiUrl + "/api/payment" + _id, {
+    headers: appendHeaders(),
+  }).then((_res) => _res.json());
+};
+
+export const alreadyPaid = (_booking) => {
+  return fetch(apiUrl + "/api/payment/already-paid", {
+    method: "POST",
+    body: JSON.stringify(_booking),
+    headers: appendHeaders(),
+  }).then((_res) => _res.json());
 };

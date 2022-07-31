@@ -11,6 +11,8 @@ import {
   LinkedInSvg,
   TwitterSvg,
 } from "../shared/widgets/svgSocialIcons";
+import { toggleModal } from "../../utility/utilityFunctions";
+import BookingModal from "../BookingModal";
 
 const Profile = ({ location }) => {
   const [user, setUser] = useState({});
@@ -86,6 +88,20 @@ const Profile = ({ location }) => {
                   </Link>
                 ) : null}
               </p>
+              {currentUserId !== user._id ? (
+                <button
+                  className="btn btn-outline-dark"
+                  data-target={
+                    fetchArguments[1] === "institutions"
+                      ? "#place-inquiry-modal"
+                      : "#place-booking-modal"
+                  }
+                  onClick={toggleModal}
+                >
+                  Place{" "}
+                  {fetchArguments[1] === "institutions" ? "Inquiry" : "Booking"}
+                </button>
+              ) : null}
               <hr></hr>
               <p style={{ fontWeight: "500", fontSize: "1.1rem" }}>Services</p>
               <div className="specialty">
@@ -227,6 +243,7 @@ const Profile = ({ location }) => {
           </div>
         </section>
       ) : null}
+      <BookingModal profile={user} />
     </>
   );
 };

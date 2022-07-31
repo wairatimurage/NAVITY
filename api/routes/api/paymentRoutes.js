@@ -3,17 +3,14 @@ const path = require("path");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const { CustomError, checkAuth } = require("../../utilities/utility");
-const {
-  handlePaymentErrors,
-  handleServerErrors,
-} = require("../../utilities/errorHandling");
+const { handlePaymentErrors } = require("../../utilities/errorHandling");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const flutterwaveCall = async (_data) => {
   const reqObject = JSON.stringify({
     tx_ref: _data._refId,
-    amount: _data.totalPayable,
-    currency: _data.currency,
+    amount: _data.bookingFee,
+    currency: "KES",
     redirect_url: _data.redirect_url,
     payment_options: _data.paymentMethod,
     meta: {
@@ -22,8 +19,8 @@ const flutterwaveCall = async (_data) => {
     },
     customer: _data.customer,
     customizations: {
-      title: "Sahara booking Payment.",
-      description: "Complete ypur booking from sahara through payment.",
+      title: "Salon Order Payment.",
+      description: "Complete your order from salon through payment.",
       logo: _data.logo_url,
     },
   });
@@ -44,7 +41,6 @@ const flutterwaveCall = async (_data) => {
       throw new CustomError(_data.message, "paymentError");
     })
     .catch((_err) => {
-      console.log(_err);
       throw new CustomError(
         "Problem connecting to Payment System.",
         "paymentError"
@@ -71,36 +67,40 @@ const flutterwaveVerification = async (_id) => {
     });
 };
 
-const paymentRoutes = (Payment, Booking) => {
+const paymentRoutes = (Payment, Order) => {
   const paymentRouter = express.Router();
 
-  paymentRouter.route("/").post(checkAuth, async (req, res) => {
+  // TODO: add auth check
+  paymentRouter.route("/").post(async (req, res) => {
     const _origin = req.get("origin");
     const _host = req.protocol + "://" + req.get("host") + "/";
     try {
-      const _user = req.user.toJSON();
+      // const _user = req.user.toJSON();
       const _refId = uuidv4();
 
       const _newPayment = new Payment({
-        clientId: req.body.clientDetails.id,
-        booking: { ...req.body },
+        clientId: req.body.client.email,
+        order: { ...req.body },
         refId: _refId,
         initiatedAt: new Date(),
         completed: false,
         currency: "KES",
-        payment: { method: req.body.payment.method },
-        totalPayable: req.body.totalPayable,
+        totalPayable: req.body.appointment.pricing,
+        bookingFee: req.body.appointment.pricing * 0.5,
+        payment: { method: req.body.appointment.paymentMethod },
       });
+
       //   check for duplicate transactions
       const openPayment = async () => {
         return await Payment.find({
-          clientId: req.body.clientDetails.id,
+          clientId: req.body.client.email,
         }).then((_results) => {
           const _openPayments = _results.find(
             (_payment) =>
               !_payment.completed &&
               _payment.totalPayable === _newPayment.totalPayable &&
-              _payment.payment.method === req.body.payment.method
+              _payment.order.appointment.paymentMethod ===
+                req.body.appointment.paymentMethod
           );
           // console.log("open check: ", _openPayments);
           if (_openPayments) {
@@ -119,30 +119,31 @@ const paymentRoutes = (Payment, Booking) => {
             //   "duplicateTransaction"
             // );
           }
+
           return false;
         });
       };
+
       await _newPayment.validateSync();
 
       if (!(await openPayment())) {
         const _flutterwaveData = {
           _refId,
           customer: {
-            email: _user.email,
-            phonenumber: _user.telephone,
-            name: _user.firstName + " " + _user.lastName,
+            // email: _user.email,
+            ..._newPayment.order.client,
           },
-          paymentMethod: req.body.payment.method,
+          paymentMethod: req.body.appointment.paymentMethod,
           currency: _newPayment.currency,
-          // TODO: configure redirect url and logo
-          redirect_url: _origin + "/cart/" + _newPayment._id,
-          logo: _host + "sahara/logo.jpeg",
+          redirect_url: _origin + "/booking/" + _newPayment._id,
+          logo: _host + "logo.jpeg",
           totalPayable: _newPayment.totalPayable,
         };
         const _savedPayment = await _newPayment
           .save()
           .then(async (_saved) => _saved);
 
+        console.log("saved: ", _savedPayment);
         const _flutterwave_call = await flutterwaveCall(_flutterwaveData);
         const _updatedPayment = _savedPayment.toJSON();
         _updatedPayment.payment.link = _flutterwave_call.data.link;
@@ -150,7 +151,6 @@ const paymentRoutes = (Payment, Booking) => {
         Payment.findOneAndUpdate(
           { refId: _savedPayment.refId },
           { $set: _updatedPayment }
-          // eslint-disable-next-line no-unused-vars
         ).then((_res) => {
           // console.log("saved: ", _res.payment.link);
           return res
@@ -168,29 +168,37 @@ const paymentRoutes = (Payment, Booking) => {
       });
     }
   });
+
   paymentRouter.route("/already-paid").post((req, res) => {
+    console.log("sss: ", req.body);
+    req.user = {};
+    // TODO: use req.user id
     Payment.find({
-      clientId: req.body.clientDetails.id,
+      clientId: req.body.client.email,
     })
       .then(async (_results) => {
         const _openPayments = _results.find(
           (_payment) =>
-            _payment.completed &&
-            _payment.totalPayable === req.body.totalPayable
+            _payment.completed && _payment.totalPayable === req.body.payable
         );
         if (_openPayments) {
           _openPayments.toJSON();
-          _openPayments.booking.payment.refId = _openPayments.refId;
-          await Booking.findOne({ "payment.refId": _openPayments.refId }).then(
+          console.log(
+            "some: ",
+            _openPayments.order.payment.refId,
+            _openPayments.refId
+          );
+          _openPayments.order.payment.refId = _openPayments.refId;
+          await Order.findOne({ "payment.refId": _openPayments.refId }).then(
             (_res) => {
               if (_res) {
                 return res.status(201).json({
                   message:
-                    "An booking has already been placed with similar details. Place new booking or contact support for assistance",
-                  booking: _res,
+                    "An order has already been placed with similar details. Place new order or contact support for assistance",
+                  order: _res,
                 });
               }
-              return res.status(201).json(_openPayments.booking);
+              return res.status(201).json(_openPayments.order);
             }
           );
         } else {
@@ -208,7 +216,6 @@ const paymentRoutes = (Payment, Booking) => {
         });
       });
   });
-  
   paymentRouter.route("/:id").post(checkAuth, async (req, res) => {
     Payment.findById(req.params.id)
       .then(async (_result) => {
@@ -223,9 +230,9 @@ const paymentRoutes = (Payment, Booking) => {
           };
           await _result.save((_err, _savedData) => {
             if (_err) throw _err;
-            _savedData.booking.payment.refId = _savedData.refId;
+            _savedData.order.payment.refId = _savedData.refId;
             // console.log(_savedData);
-            return res.status(201).json(_result.booking);
+            return res.status(201).json(_result.order);
           });
         } else {
           Payment.findOne(
@@ -233,15 +240,15 @@ const paymentRoutes = (Payment, Booking) => {
             async (_err, _res) => {
               if (_err) throw _err;
               if (_res) {
-                // TODO: find booking
-                await Booking.findOne({
+                // TODO: find order
+                await Order.findOne({
                   "payment.refId": _result.refId,
                 }).then((_res) => {
                   if (_res) {
                     return res.status(201).json({
                       message:
-                        "An booking has already been placed with similar details. Place new booking or contact support for assistance",
-                      booking: _res,
+                        "An order has already been placed with similar details. Place new order or contact support for assistance",
+                      order: _res,
                     });
                   }
                   return res.status(201).json({

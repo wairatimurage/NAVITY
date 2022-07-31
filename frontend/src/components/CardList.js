@@ -116,6 +116,7 @@ const DetailCard = ({ details, urlPath }) => {
     </div>
   );
 };
+
 const CardList = (props) => {
   const [loadState, setloadState] = useState(false);
   const [list, setList] = useState([]);

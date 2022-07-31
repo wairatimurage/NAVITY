@@ -11,7 +11,7 @@ const Login = ({ history }) => {
   const handleLoginError = (data) => {
     console.log(data);
   };
-  const handleSubmit = (event) => {e
+  const handleSubmit = (event) => {
     event.preventDefault();
     callLogin(user)
       .then((data) =>
