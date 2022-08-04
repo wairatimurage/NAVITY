@@ -37,6 +37,10 @@
   transition: all 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53);
 }
 
+#nav-name {
+  font-size: 0.9rem;
+  color: #fafafa;
+}
 .side-nav {
   transition: all 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53);
   width: 250px;

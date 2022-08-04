@@ -14,6 +14,7 @@ import PageHeader from "./shared/widgets/PageHeader";
 import Filter from "./shared/widgets/Filter";
 
 const DetailCard = ({ details, urlPath }) => {
+  console.log("dets: ", details);
   return (
     <div
       className="card"
@@ -26,9 +27,9 @@ const DetailCard = ({ details, urlPath }) => {
     >
       <Link to={{ pathname: `${urlPath}/${details._id}`, state: { details } }}>
         <div className="card-logo">
-          {details.logo ? (
+          {details.avatar ? (
             <img
-              src={details.logo}
+              src={details.avatar}
               style={{
                 maxWidth: "13rem",
                 boxSizing: "border-box",
@@ -135,6 +136,7 @@ const CardList = (props) => {
   useEffect(() => {
     fetchList();
     setloadState(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [props.location]);
 
   return (

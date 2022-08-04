@@ -5,6 +5,7 @@ const debug = require("debug")("server");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const passport = require("passport");
 const session = require("express-session");
 // const methodOverride = require("method-override");
@@ -43,20 +44,21 @@ const db = mongoose.connect(
 mongoose.connection;
 
 app.use(morgan("tiny"));
-app.use(express.json());
+app.use(express.json({ limit: "20MB" }));
 // cors settings
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    `Access-Control-Allow-Headers`,
-    `Origin, X-Requsted-With, Content-Type, Accept, Authorization`
-  );
-  res.header(
-    `Access-Control-Expose-Headers`,
-    `Origin, X-Requsted-With, Content-Type, Accept, Authorization`
-  );
-  next();
-});
+app.use(cors());
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header(
+//     `Access-Control-Allow-Headers`,
+//     `Origin, X-Requsted-With, Content-Type, Accept, Authorization`
+//   );
+//   res.header(
+//     `Access-Control-Expose-Headers`,
+//     `Origin, X-Requsted-With, Content-Type, Accept, Authorization`
+//   );
+//   next();
+// });
 
 // console.log("secret", process.env.CLIENT_ID);
 // calling pasport
@@ -77,8 +79,9 @@ initializePassport(passport);
 // app.use(methodOverride("_method"));
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "50MB" }));
 // app.use(express.static(path.join(__dirname, "pages")));
+app.use("", express.static(path.join(__dirname, "./images/avatars")));
 app.use("", express.static(path.join(__dirname, "../frontend/build")));
 
 app.use(require("./routes"));

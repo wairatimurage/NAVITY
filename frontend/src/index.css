@@ -29,6 +29,18 @@ a {
   color: inherit;
 }
 
+textarea {
+  resize: none;
+}
+
+.error-message {
+  color: #ff0000;
+  background-color: #f09b9b;
+  padding: 0.25rem;
+  margin: 0 auto;
+  border-radius: 5px;
+  font-size: 0.9em;
+}
 .fade {
   background-color: #00000080;
   transition: opacity 0.15s linear;
@@ -323,3 +335,28 @@ img#my-account-avatar {
   }
 }
 /* modal styles end */
+
+.booking-complete {
+  box-shadow: 3px 3px 10px #e8e7e7;
+  background-color: #fff;
+  margin: 1rem;
+  padding: 1rem 0.5rem;
+  border-radius: 10px;
+}
+
+.booking-complete .form-group span {
+  font-weight: 600;
+}
+.booking-complete .form-group p {
+  margin: 0.5rem 1rem;
+}
+.booking-complete-h1 {
+  font-size: 1.2rem;
+}
+
+.booking-complete-h1,
+.booking-complete-h2 {
+  font-weight: 600;
+  text-transform: capitalize;
+  text-align: center;
+}

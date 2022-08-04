@@ -3,7 +3,10 @@ const path = require("path");
 const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const { CustomError, checkAuth } = require("../../utilities/utility");
-const { handlePaymentErrors } = require("../../utilities/errorHandling");
+const {
+  handlePaymentErrors,
+  handleServerErrors,
+} = require("../../utilities/errorHandling");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
 const flutterwaveCall = async (_data) => {
@@ -14,13 +17,13 @@ const flutterwaveCall = async (_data) => {
     redirect_url: _data.redirect_url,
     payment_options: _data.paymentMethod,
     meta: {
-      consumer_id: _data.customerId,
+      consumer_id: _data.email,
       // consumer_mac: "92a3-912ba-1192a",
     },
     customer: _data.customer,
     customizations: {
-      title: "Salon Order Payment.",
-      description: "Complete your order from salon through payment.",
+      title: "Booking Consultation Payment.",
+      description: "Complete your booking through payment.",
       logo: _data.logo_url,
     },
   });
@@ -41,6 +44,8 @@ const flutterwaveCall = async (_data) => {
       throw new CustomError(_data.message, "paymentError");
     })
     .catch((_err) => {
+
+      console.log(_err);
       throw new CustomError(
         "Problem connecting to Payment System.",
         "paymentError"
@@ -67,7 +72,7 @@ const flutterwaveVerification = async (_id) => {
     });
 };
 
-const paymentRoutes = (Payment, Order) => {
+const paymentRoutes = (Payment, Booking) => {
   const paymentRouter = express.Router();
 
   // TODO: add auth check
@@ -85,9 +90,8 @@ const paymentRoutes = (Payment, Order) => {
         initiatedAt: new Date(),
         completed: false,
         currency: "KES",
-        totalPayable: req.body.appointment.pricing,
-        bookingFee: req.body.appointment.pricing * 0.5,
-        payment: { method: req.body.appointment.paymentMethod },
+        bookingFee: req.body.bookingFee,
+        payment: { method: req.body.paymentMethod },
       });
 
       //   check for duplicate transactions
@@ -98,9 +102,9 @@ const paymentRoutes = (Payment, Order) => {
           const _openPayments = _results.find(
             (_payment) =>
               !_payment.completed &&
-              _payment.totalPayable === _newPayment.totalPayable &&
-              _payment.order.appointment.paymentMethod ===
-                req.body.appointment.paymentMethod
+              // _payment.totalPayable === _newPayment.totalPayable &&
+              _payment.order.paymentMethod === req.body.paymentMethod &&
+              _payment.order.provider.email === req.body.provider.email
           );
           // console.log("open check: ", _openPayments);
           if (_openPayments) {
@@ -133,12 +137,14 @@ const paymentRoutes = (Payment, Order) => {
             // email: _user.email,
             ..._newPayment.order.client,
           },
-          paymentMethod: req.body.appointment.paymentMethod,
+          paymentMethod: req.body.paymentMethod,
           currency: _newPayment.currency,
           redirect_url: _origin + "/booking/" + _newPayment._id,
           logo: _host + "logo.jpeg",
           totalPayable: _newPayment.totalPayable,
+          bookingFee: _newPayment.bookingFee,
         };
+        
         const _savedPayment = await _newPayment
           .save()
           .then(async (_saved) => _saved);
@@ -151,13 +157,14 @@ const paymentRoutes = (Payment, Order) => {
         Payment.findOneAndUpdate(
           { refId: _savedPayment.refId },
           { $set: _updatedPayment }
-        ).then((_res) => {
+        ).then(() => {
           // console.log("saved: ", _res.payment.link);
           return res
             .status(201)
             .json({ redirectUrl: _flutterwave_call.data.link });
         });
       }
+
     } catch (_err) {
       handlePaymentErrors(_err);
       return res.status(421).json({
@@ -189,7 +196,7 @@ const paymentRoutes = (Payment, Order) => {
             _openPayments.refId
           );
           _openPayments.order.payment.refId = _openPayments.refId;
-          await Order.findOne({ "payment.refId": _openPayments.refId }).then(
+          await Booking.findOne({ "payment.refId": _openPayments.refId }).then(
             (_res) => {
               if (_res) {
                 return res.status(201).json({
@@ -222,6 +229,7 @@ const paymentRoutes = (Payment, Order) => {
         const _verificationResponse = await flutterwaveVerification(
           req.body.transaction_id
         );
+        console.log("got here: ",);
         if (_result.refId === _verificationResponse.data.tx_ref) {
           _result.completed = true;
           _result.payment = {
@@ -230,8 +238,8 @@ const paymentRoutes = (Payment, Order) => {
           };
           await _result.save((_err, _savedData) => {
             if (_err) throw _err;
-            _savedData.order.payment.refId = _savedData.refId;
-            // console.log(_savedData);
+            // _savedData.payment.refId = _savedData.refId;
+            console.log(_savedData);
             return res.status(201).json(_result.order);
           });
         } else {
@@ -241,7 +249,7 @@ const paymentRoutes = (Payment, Order) => {
               if (_err) throw _err;
               if (_res) {
                 // TODO: find order
-                await Order.findOne({
+                await Booking.findOne({
                   "payment.refId": _result.refId,
                 }).then((_res) => {
                   if (_res) {

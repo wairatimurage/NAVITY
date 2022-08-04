@@ -1,5 +1,10 @@
 const passport = require("passport");
+const fs = require("fs");
+const path = require("path");
 
+const { handleServerErrors } = require("./errorHandling");
+const { tinifyImage } = require("./tinify");
+const { uploadFile } = require("./s3Actions");
 const models = {
   pilot: require("../models/pilotModel"),
   enthusiast: require("../models/enthusiastModel"),
@@ -55,7 +60,7 @@ const getUserById = (id) => {
 };
 
 function checkUser(req, res, next) {
-  console.log(req.user._id, req.params.id);
+  console.log("user", req.user._id, req.params.id);
   req.user._id.toString() === req.params.id.toString()
     ? next()
     : res
@@ -81,10 +86,75 @@ const verifyAdmin = (req, res, next) => {
   });
 };
 
+const updateProfileAvatar = async (_user, host) => {
+  if (_user.avatar) {
+    const _dirPath = path.join(__dirname, `../images/avatars`);
+    if (
+      _user.avatar &&
+      _user.avatar.split("base64").length === 2 &&
+      _user.avatar.split("://").length !== 2
+    ) {
+      if (!fs.existsSync(_dirPath)) {
+        // check if avatars folder exists and create if null
+        fs.mkdirSync(path.join(__dirname, `../images`));
+        fs.mkdirSync(_dirPath);
+      }
+      const baseString = _user.avatar.split("base64,").slice(-1).toString();
+      const imageName = _user._id + ".png";
+      if (process.env.NODE_ENV === "development") {
+        await tinifyImage(
+          baseString,
+          path.join(__dirname, `../images/avatars/${imageName}`)
+        );
+        _user.avatar = imageName;
+      } else {
+        // TODO: try and make response wait for upload file return, try promise.resolve/promise.all before response
+        // eslint-disable-next-line no-unused-vars
+        const _location = await uploadFile(baseString, "avatars/" + imageName);
+        _user.avatar = process.env.BUCKET_LINK + "avatars/" + imageName;
+      }
+    }
+    if (
+      process.env.NODE_ENV === "development" &&
+      _user.avatar.split("://").length > 1
+    ) {
+      _user.avatar = _user.avatar.replace(host, "");
+    }
+  }
+  return _user;
+};
+
+const updateProfileResponse = (_user, _host) => {
+  if (process.env.NODE_ENV === "development") {
+    let _new = _user.toJSON();
+    _new.avatar = _host + _new.avatar;
+
+    delete _new.password;
+    delete _new.__v;
+    return _new;
+  }
+  return _user;
+};
+
+const deleteAvatar = (user, _host) => {
+  let _avatar = user._avatar;
+  try {
+    let _newValue = _avatar.replace(_host, "");
+    const imagePath = path.join(__dirname, "../images/avatars/" + _newValue);
+    fs.unlinkSync(imagePath);
+  } catch (_err) {
+    handleServerErrors(_err);
+  }
+
+  return user;
+};
 module.exports = {
   checkUser,
   getUserByEmail,
   getUserById,
   checkAuth,
   verifyAdmin,
+  deleteAvatar,
+  updateProfileAvatar,
+  updateProfileResponse,
 };

@@ -1,6 +1,7 @@
-const router = require("express").Router();
+const express = require("express");
 const path = require("path");
 
+const router = express.Router();
 const Institution = require("../models/institutionModel");
 const Pilot = require("../models/pilotModel");
 const Enthusiasts = require("../models/enthusiastModel");
@@ -11,14 +12,22 @@ const Post = require("../models/postModel");
 const pilotRoutes = require("./api/pilotRoutes")(Pilot, Booking);
 const institutionRoutes = require("./api/institutionsRoutes")(Institution);
 const enthusiastsRoutes = require("./api/enthusiastRoutes")(Enthusiasts);
-const authRoutes = require("./api/authRoutes")(Payments, Booking);
-const paymentRoutes = require("./api/paymentRoutes")();
+const authRoutes = require("./api/authRoutes")();
+const paymentRoutes = require("./api/paymentRoutes")(Payments, Booking);
 const quoteRoutes = require("./api/quoteRoutes")(Quote);
 const postRoutes = require("./api/postRoutes")(Post);
 
-router.use("/api/pilots", pilotRoutes);
-router.use("/api/institutions", institutionRoutes);
-router.use("/api/enthusiasts", enthusiastsRoutes);
+router.use("/api/pilots", express.json({ limit: "20MB" }), pilotRoutes);
+router.use(
+  "/api/institutions",
+  express.json({ limit: "20MB" }),
+  institutionRoutes
+);
+router.use(
+  "/api/enthusiasts",
+  express.json({ limit: "20MB" }),
+  enthusiastsRoutes
+);
 router.use("/api/quotes", quoteRoutes);
 router.use("/api/payment", paymentRoutes);
 router.use("/api/blog", postRoutes);

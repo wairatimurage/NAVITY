@@ -35,6 +35,14 @@ export const fetchInstitutions = () => {
     .catch((err) => console.log(err));
 };
 
+export const placeInquiry = (inquiry) => {
+  return fetch(`${apiUrl}/api/institutions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(inquiry),
+  }).then((response) => response.json());
+};
+
 export const searchRegistry = (accountType, searchQuery) => {
   return fetch(`${apiUrl}/api/${accountType}/search`, {
     method: "POST",
@@ -100,9 +108,29 @@ export const getQuotes = (quoteRequest) => {
   }).then((response) => response.json());
 };
 
-export const prepaidDetails = (_id) => {
-  return fetch(apiUrl + "/api/payment" + _id, {
+export const completeBooking = (_booking) => {
+  return fetch(`${apiUrl}/api/pilots/booking`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(_booking),
+  }).then((response) => response.json());
+};
+
+export const makePayment = (_booking) => {
+  console.log("sss: ", _booking);
+  return fetch(apiUrl + "/api/payment", {
+    method: "POST",
+    body: JSON.stringify(_booking),
     headers: appendHeaders(),
+  }).then((_res) => _res.json());
+};
+
+export const prepaidDetails = (_id, _data) => {
+  return fetch(apiUrl + "/api/payment/" + _id, {
+    method: "POST",
+    // credentials: "include",
+    headers: appendHeaders(),
+    body: JSON.stringify(_data),
   }).then((_res) => _res.json());
 };
 

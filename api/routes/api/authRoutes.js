@@ -1,6 +1,9 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-const { getUserByEmail } = require("../../utilities/utility");
+const {
+  getUserByEmail,
+  updateProfileResponse,
+} = require("../../utilities/utility");
 const { handleResponseErrors } = require("./handleResponseCases");
 
 const jwt = require("jsonwebtoken");
@@ -90,11 +93,8 @@ const authRoutes = () => {
   authRouter
     .route("/current-user")
     .get(passport.authenticate("jwt", { session: false }), (req, res) => {
-      const returnUser = req.user.toJSON();
-      delete returnUser.password;
-      delete returnUser.__v;
-
-      return res.status(201).json(returnUser);
+      const _host = req.protocol + "://" + req.get("host") + "/";
+      return res.status(201).json(updateProfileResponse(req.user, _host));
     });
   return authRouter;
 };

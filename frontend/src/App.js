@@ -16,6 +16,7 @@ import Footer from "./components/shared/Footer";
 import EditProfile from "./components/Profile/EditProfile";
 import Posts from "./components/Posts";
 import Bookings from "./components/Bookings";
+import PlaceBooking from "./components/PlaceBooking";
 
 function App() {
   const [toggleState, setToggleState] = useState(false);
@@ -58,6 +59,7 @@ function App() {
           <Route path="/pilots/:name" component={Profile} />
           <Route path="/institutions/:id" component={Profile} />
           <Route path="/bookings/:id" component={Bookings} />
+          <Route path="/booking/:id" component={PlaceBooking} />
           <Route component={PageNotFound} />
         </Switch>
       </div>

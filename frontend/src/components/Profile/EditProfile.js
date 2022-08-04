@@ -3,6 +3,7 @@ import Proptypes from "prop-types";
 import { editProfile, fetchProfile } from "../../utility/apiCalls";
 import TextInput from "../shared/widgets/TextInput";
 import EditList from "../shared/widgets/EditList";
+import { MinimalLoadingSpinner } from "../shared/widgets/LoadingSpinner";
 // import { Link } from "react-router-dom";
 
 const EditProfile = ({ location, history }) => {
@@ -11,34 +12,41 @@ const EditProfile = ({ location, history }) => {
     socials: { instagram: "", twitter: "", linkedIn: "" },
   });
   const [updateable, setUpdateable] = useState(false);
-  const [loadState, setLoadState] = useState(false);
+  const [loadState, setLoadState] = useState(true);
   const fetchArguments = location.pathname.split("/");
-
-  useEffect(() => {
-    fetchProfile(fetchArguments[2], fetchArguments[4]).then((data) => {
-      setUser({ ...user, ...data });
-      setLoadState(true);
-    });
-  }, []);
 
   const handleImageUpload = (event) => {
     const reader = new FileReader();
-
+    reader.readAsDataURL(event.target.files[0]);
     reader.onloadend = () => {
       setUser({
         ...user,
-        [event.target.name]: reader.result,
+        avatar: reader.result,
       });
     };
-    console.log("user: ", user.avatar);
-    console.log("reader: ", reader.result);
     setUpdateable(true);
+  };
+
+  const handleArbitrarySave = () => {
+    setLoadState(true);
+    editProfile(fetchArguments[2], fetchArguments[4], user)
+      .then((_res) => {
+        setLoadState(false);
+        console.log("res: ", _res);
+        alert("Profile photo updated successfully.");
+      })
+      .catch((err) => {
+        setLoadState(false);
+        console.log(err);
+      });
+    setUpdateable(false);
   };
 
   const handleInputChange = (event) => {
     event.preventDefault();
     setUser({ ...user, [event.target.name]: event.target.value });
   };
+
   const handleNestedInputChange = (event) => {
     const [group, ...name] = event.target.name.split(" ");
     if (event.target.type === "textarea" || event.target.type === "url") {
@@ -51,9 +59,16 @@ const EditProfile = ({ location, history }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setLoadState(true);
     editProfile(fetchArguments[2], fetchArguments[4], user)
-      .then(() => history.goBack())
-      .catch((err) => console.log(err));
+      .then(() => {
+        setLoadState(false);
+        history.goBack();
+      })
+      .catch((err) => {
+        setLoadState(false);
+        console.log(err);
+      });
   };
   const cancelEdit = (event) => {
     event.preventDefault();
@@ -61,33 +76,48 @@ const EditProfile = ({ location, history }) => {
     history.goBack();
     return;
   };
+
+  useEffect(() => {
+    updateable && handleArbitrarySave();
+  }, [user.avatar]);
+
+  useEffect(() => {
+    fetchProfile(fetchArguments[2], fetchArguments[4]).then((data) => {
+      setUser({ ...user, ...data });
+      setLoadState(false);
+    });
+  }, []);
+
   return (
     <>
-      {loadState ? (
+      {loadState ? <MinimalLoadingSpinner /> : null}
+      {!loadState ? (
         <section className="container-fluid">
           {/* <div className="container-fluid"><h2>Edit Profile</h2></div> */}
           <div className="container-fluid profile-edit">
             <form className="personal-details container">
               <p className="profile-edit-section-title">Basic Information</p>
-              {user.avatar ? (
-                <img
-                  id="my-account-avatar"
-                  src={user.avatar}
-                  alt=""
+
+              <div className="avatar-upload-container">
+                <input
+                  type="file"
                   name="avatar"
+                  id="avatar"
+                  onChange={handleImageUpload}
+                  accept="image/png, image/jpeg"
+                  hidden
+                  className="avatar-upload"
                 />
-              ) : (
-                <div className="avatar-upload-container">
-                  <input
-                    type="file"
-                    name="avatar"
-                    id="avatar"
-                    onChange={handleImageUpload}
-                    accept="image/png, image/jpeg"
-                    hidden
-                    className="avatar-upload"
-                  />
-                  <label htmlFor="avatar" id="my-account-avatar">
+
+                <label htmlFor="avatar" id="my-account-avatar">
+                  {user.avatar ? (
+                    <img
+                      id="my-account-avatar"
+                      src={user.avatar}
+                      alt=""
+                      name="avatar"
+                    />
+                  ) : (
                     <svg
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -95,9 +125,9 @@ const EditProfile = ({ location, history }) => {
                     >
                       <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path>
                     </svg>
-                  </label>
-                </div>
-              )}
+                  )}
+                </label>
+              </div>
 
               <TextInput
                 name="name"
@@ -126,7 +156,7 @@ const EditProfile = ({ location, history }) => {
                   name="telephone"
                   type="tel"
                   label="Mobile: "
-                  value={user.telephone || ""}
+                  value={user.telephone.toString() || ""}
                   onChange={handleInputChange}
                 />
               )}
@@ -135,7 +165,7 @@ const EditProfile = ({ location, history }) => {
                   name="location"
                   type="tel"
                   label="Location: "
-                  value={user.location || ""}
+                  value={user.location.toString() || ""}
                   onChange={handleInputChange}
                 />
               ) : (
@@ -173,7 +203,7 @@ const EditProfile = ({ location, history }) => {
                   <EditList
                     name="bio services"
                     label="Services:"
-                    list={user.bio.services}
+                    list={user.bio.services || []}
                     user={user}
                     setUser={setUser}
                   />
@@ -183,27 +213,28 @@ const EditProfile = ({ location, history }) => {
                   <EditList
                     name="bio services"
                     label="Services:"
-                    list={user.bio.services}
+                    list={user.bio.services || []}
                     user={user}
                     setUser={setUser}
                   />
                   <EditList
                     name="bio dronesFlown"
                     label="Drones Flown:"
-                    list={user.bio.dronesFlown}
+                    list={user.bio.dronesFlown || []}
                     user={user}
                     setUser={setUser}
                   />
                   <EditList
                     name="bio rating"
                     label="Rating:"
-                    list={user.bio.rating}
+                    list={user.bio.rating || []}
                     user={user}
                     setUser={setUser}
                   />
                 </>
               )}
             </form>
+
             <form className="container">
               <p className="profile-edit-section-title">Socials</p>
               <TextInput

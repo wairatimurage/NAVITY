@@ -3,55 +3,6 @@ import PropTypes from "prop-types";
 import { checkEmpty } from "../../../utility/formatingFunctions";
 import TextInput from "./TextInput";
 
-const AddEditList = () => {
-  const [addState, setAddState] = useState(false);
-  const toggleAdd = () => setAddState(!addState);
-  return (
-    <>
-      <div style={{ width: "100%" }}>
-        <button
-          onClick={toggleAdd}
-          className="btn"
-          style={{ color: "#629be6", lineHeight: "1.5rem", float: "right" }}
-        >
-          <svg
-            version="1.1"
-            viewBox="0 0 251.882 251.882"
-            style={{
-              enableBackground: "new 0 0 251.882 251.882",
-              fill: "#629be6",
-              height: "1rem",
-              width: "1rem",
-              marginRight: ".5rem",
-              verticalAlign: "middle",
-              marginTop: "-.2rem",
-            }}
-          >
-            <g>
-              <path
-                d="M215.037,36.846c-49.129-49.128-129.063-49.128-178.191,0c-49.127,49.127-49.127,129.063,0,178.19
-		c24.564,24.564,56.83,36.846,89.096,36.846s64.531-12.282,89.096-36.846C264.164,165.909,264.164,85.973,215.037,36.846z
-		 M49.574,202.309c-42.109-42.109-42.109-110.626,0-152.735c21.055-21.054,48.711-31.582,76.367-31.582s55.313,10.527,76.367,31.582
-		c42.109,42.109,42.109,110.626,0,152.735C160.199,244.417,91.683,244.417,49.574,202.309z"
-              />
-              <path
-                d="M194.823,116.941h-59.882V57.059c0-4.971-4.029-9-9-9s-9,4.029-9,9v59.882H57.059c-4.971,0-9,4.029-9,9s4.029,9,9,9h59.882
-		v59.882c0,4.971,4.029,9,9,9s9-4.029,9-9v-59.882h59.882c4.971,0,9-4.029,9-9S199.794,116.941,194.823,116.941z"
-              />
-            </g>
-          </svg>
-          <span>Add new</span>
-        </button>
-      </div>
-      {addState ? (
-        <form style={{ clear: "both" }}>
-          <TextInput name="" />
-        </form>
-      ) : null}
-    </>
-  );
-};
-
 const EditListItem = (props) => {
   const deleteItem = (event) => {
     const value = event.target.getAttribute("value");
@@ -131,11 +82,90 @@ const EditListItem = (props) => {
 
 const EditList = (props) => {
   const [group, nameValue] = props.name.split(" ");
+  const [currentEdit, setCurrentEdit] = useState("");
+  const [addState, setAddState] = useState(false);
+  const toggleAdd = (event) => {
+    event.preventDefault();
+    setAddState(!addState);
+  };
+
+  const handleInputChange = (event) => {
+    event.preventDefault();
+    setCurrentEdit(event.target.value);
+  };
+
+  const appendToArray = (event) => {
+    event.preventDefault();
+    props.setUser({
+      ...props.user,
+      [group]: {
+        ...props.user[group],
+        [nameValue]: [
+          ...(props.user[group][nameValue] || []),
+          event.target.value,
+        ],
+      },
+    });
+    setCurrentEdit("");
+  };
+
   return (
     <div className="form-group">
       <div>
         <label htmlFor={props.name}>{props.label}</label>
-        <AddEditList />
+        <>
+          <div style={{ width: "100%" }}>
+            <button
+              onClick={toggleAdd}
+              className="btn"
+              style={{ color: "#629be6", lineHeight: "1.5rem", float: "right" }}
+            >
+              <svg
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  stroke: "#629be6",
+                  height: "1.4rem",
+                  width: "1.4rem",
+                  marginRight: ".5rem",
+                  verticalAlign: "middle",
+                  marginTop: "-.2rem",
+                }}
+              >
+                {addState ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                )}
+              </svg>
+              <span>{addState ? "Colapse" : "Add new"}</span>
+            </button>
+          </div>
+          {addState ? (
+            <div style={{ clear: "both" }}>
+              <TextInput
+                name=""
+                label={"Name:"}
+                value={currentEdit}
+                onBlur={appendToArray}
+                onChange={handleInputChange}
+              />
+            </div>
+          ) : null}
+        </>
+
         <div
           style={{
             margin: ".5rem 0",
@@ -181,4 +211,5 @@ EditList.propTypes = {
   setUser: PropTypes.func,
   user: PropTypes.object,
 };
+
 export default EditList;

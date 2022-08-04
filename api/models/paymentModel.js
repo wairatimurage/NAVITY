@@ -9,7 +9,7 @@ const paymentModel = new Schema({
   completed: { type: Boolean, required: true, default: false },
   currency: { type: String, required: true },
   bookingFee: { type: Number, required: true },
-  totalPayable: { type: Number, required: true },
+  totalPayable: { type: Number },
   payment: { type: Object },
 });
 

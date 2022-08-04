@@ -37,12 +37,27 @@ const Navbar = (props) => {
         </h1>
         <button
           className="user-icon"
-          style={{ width: "3rem", height: "3rem" }}
+          style={{
+            width: "fit-content",
+            height: "3rem",
+            display: "flex",
+            gap: ".5rem",
+            alignItems: "center",
+          }}
           onClick={props.toggleDropdown}
         >
           {currentUser ? (
-            currentUser.logo ? (
-              <img src={props.user.avatar} alt="" />
+            currentUser.avatar ? (
+              <img
+                style={{
+                  width: "2rem",
+                  height: "2rem",
+                  borderRadius: "50%",
+                  border: "solid 2px #fff",
+                }}
+                src={currentUser.avatar}
+                alt=""
+              />
             ) : (
               <svg
                 version="1.1"
@@ -73,6 +88,7 @@ const Navbar = (props) => {
               </svg>
             )
           ) : null}
+          {currentUser ? <span id="nav-name">{currentUser.name} </span> : null}
         </button>
       </div>
       <nav className={props.toggleState ? "side-nav links" : "hide links"}>

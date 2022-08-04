@@ -16,17 +16,17 @@ import BookingModal from "../BookingModal";
 
 const Profile = ({ location }) => {
   const [user, setUser] = useState({});
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUser, setCurrentUser] = useState({});
   const [loadState, setLoadState] = useState(false);
   const fetchArguments = location.pathname.split("/");
 
   useEffect(() => {
     fetchProfile(fetchArguments[1], fetchArguments[2]).then((data) => {
       setUser({ ...user, ...data });
-      fetchCurrentUser().then((response) => setCurrentUserId(response._id));
+      fetchCurrentUser().then((response) => setCurrentUser(response));
       setLoadState(true);
     });
-  }, []);
+  }, [location]);
   return (
     <>
       {loadState ? (
@@ -41,8 +41,8 @@ const Profile = ({ location }) => {
                   margin: "0 auto",
                 }}
               >
-                {user.logo ? (
-                  <img src={user.logo} alt="logo" />
+                {user.avatar ? (
+                  <img src={user.avatar} alt="logo" />
                 ) : (
                   <img src={sampleLogo} alt="logo" />
                 )}
@@ -55,7 +55,7 @@ const Profile = ({ location }) => {
                 }}
               >
                 {user.name}
-                {currentUserId === user._id ? (
+                {currentUser && currentUser._id === user._id ? (
                   <Link
                     to={{
                       pathname: `/profile/${user.accountType}s/edit/${user._id}`,
@@ -88,7 +88,7 @@ const Profile = ({ location }) => {
                   </Link>
                 ) : null}
               </p>
-              {currentUserId !== user._id ? (
+              {currentUser && currentUser._id !== user._id ? (
                 <button
                   className="btn btn-outline-dark"
                   data-target={
@@ -243,7 +243,7 @@ const Profile = ({ location }) => {
           </div>
         </section>
       ) : null}
-      <BookingModal profile={user} />
+      <BookingModal profile={user} location={location} user={currentUser} />
     </>
   );
 };
