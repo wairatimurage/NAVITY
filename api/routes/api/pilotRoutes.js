@@ -26,6 +26,7 @@ const pilotRoutes = (Pilot, Booking) => {
   pilotRouter
     .route("/booking")
     .get(checkUser, (req, res) => {
+      console.log("ss: ",)
       Booking.find({ "client.email": req.user.email })
         .then((_res) => {
           console.log("ss: ", _res);

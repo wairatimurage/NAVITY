@@ -1,6 +1,7 @@
 // const apiUrl = process.env.REACT_APP_API_URL;
 const storeToken = (response) => {
   const token = response.headers.get("Authorization");
+  console.log("ss: ", token);
   window.localStorage.setItem("token", token);
 };
 const appendHeaders = () => {
@@ -114,6 +115,12 @@ export const completeBooking = (_booking) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(_booking),
   }).then((response) => response.json());
+};
+
+export const fetchBookings = () => {
+  return fetch(`${apiUrl}/api/pilots/booking`)
+    .then((response) => response.json())
+    .catch((err) => console.log(err));
 };
 
 export const makePayment = (_booking) => {
