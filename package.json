@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "install": "cd api && npm i",
-    "postinstall": "cd frontend && npm i",
+    "postinstall": "cd frontend && npm i && npm run build",
+    "prebuild": " npx browserslist@latest --update-db",
     "start": "cd api && npm start",
     "api:dev": "cd api && npm run start:dev",
     "start:react": "cd frontend && npm start",
