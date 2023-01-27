@@ -8,7 +8,7 @@
     "start:dev": "npm run gen-keypair && cross-env NODE_ENV=development nodemon server.js",
     "start:prod": "npm run gen-keypair && cross-env NODE_ENV=production set DEBUG =* & nodemon server.js",
     "samp": "nodemon server.js",
-    "gen-keypair": "node ./api/cryptography/generateKeyPair.js"
+    "gen-keypair": "node ./cryptography/generateKeyPair.js"
   },
   "keywords": [],
   "author": "",
