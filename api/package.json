@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "npm run gen-keypair && set DEBUG =* & nodemon server.js",
-    "start:dev": "npm run gen-keypair && cross-env NODE_ENV=development nodemon server.js",
-    "start:prod": "npm run gen-keypair && cross-env NODE_ENV=production set DEBUG =* & nodemon server.js",
+    "start": "set DEBUG =* & nodemon server.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start:prod": "cross-env NODE_ENV=production set DEBUG =* & nodemon server.js",
     "samp": "nodemon server.js",
     "gen-keypair": "node ./cryptography/generateKeyPair.js"
   },
