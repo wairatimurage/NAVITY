@@ -1,20 +1,25 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const clientRequestsSchema = (sequelize, Sequelize) => {
+  const ClientRequest = sequelize.define(
+    "ClientRequest",
+    {
+      location: { type: Sequelize.STRING },
+      service: {
+        fromList: { type: Sequelize.STRING },
+        additionalDetails: { type: Sequelize.STRING },
+      },
+      schedule: {
+        fromDate: { type: Sequelize.DATE },
+        toDate: { type: Sequelize.DATE },
+        additionalDetails: { type: Sequelize.STRING },
+      },
+      fullName: { type: Sequelize.STRING },
+      email: { type: Sequelize.STRING },
+      telephone: { type: Sequelize.STRING },
+    },
+    { timestamps: true }
+  );
 
-const clientRequestModel = new Schema({
-  location: { type: String },
-  service: {
-    fromList: { type: String },
-    additionalDetails: { type: String },
-  },
-  schedule: {
-    fromDate: { type: Date },
-    toDate: { type: Date },
-    additionalDetails: { type: String },
-  },
-  fullName: { type: String },
-  email: { type: String },
-  telephone: { type: String },
-});
+  return ClientRequest;
+};
 
-module.exports = mongoose.model("ClientRequest", clientRequestModel);
+module.exports = clientRequestsSchema;

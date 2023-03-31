@@ -1,0 +1,10 @@
+SESSION_SECRET= #generate key using crypto
+FLUTTERWAVE_URI=https://api.flutterwave.com/v3/payments
+FLUTTERWAVE_SECRET= # flutterwave api bearer token
+MONGODB_URI=mongodb://localhost/navity
+TINIFY_API_KEY= 
+BUCKET_LINK= # aws amazon s3 bucket link
+BUCKET= # aws amazon s3 bucket name
+DB_NAME=navity
+DB_USER=postgres
+DB_PASSWORD=root

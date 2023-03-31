@@ -1,16 +1,21 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const paymentSchema = (sequelize, Sequelize) => {
+  const Payment = sequelize.define(
+    "Payment",
+    {
+      refId: { type: Sequelize.STRING, unique: true },
+      order: { type: Sequelize.JSON, allowNull: true },
+      clientId: { type: Sequelize.STRING, allowNull: true },
+      initiatedAt: { type: Sequelize.DATE, allowNull: true },
+      completed: { type: Sequelize.BOOLEAN, allowNull: true, default: false },
+      currency: { type: Sequelize.STRING, allowNull: true },
+      bookingFee: { type: Sequelize.INTEGER, allowNull: true },
+      totalPayable: { type: Sequelize.INTEGER },
+      payment: { type: Sequelize.JSON },
+    },
+    { timestamps: true }
+  );
 
-const paymentModel = new Schema({
-  refId: { type: String, unique: true },
-  order: { type: Object, required: true },
-  clientId: { type: String, required: true },
-  initiatedAt: { type: Date, required: true },
-  completed: { type: Boolean, required: true, default: false },
-  currency: { type: String, required: true },
-  bookingFee: { type: Number, required: true },
-  totalPayable: { type: Number },
-  payment: { type: Object },
-});
+  return Payment;
+};
 
-module.exports = mongoose.model("Payment", paymentModel);
+module.exports = paymentSchema;

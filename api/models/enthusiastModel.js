@@ -1,16 +1,21 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const enthusiastSchema = (sequelize, Sequelize) => {
+  const Enthusiast = sequelize.define(
+    "Enthusiast",
+    {
+      accountType: { type: Sequelize.STRING },
+      name: { type: Sequelize.STRING },
+      email: { type: Sequelize.STRING },
+      liscenced: { type: Sequelize.BOOLEAN },
+      mailingList: { type: Sequelize.BOOLEAN },
+      password: { type: Sequelize.STRING },
+      telephone: { type: Sequelize.STRING },
+      wallet: { type: Sequelize.JSON },
+      avatar: { type: Sequelize.STRING },
+    },
+    { timestamps: true }
+  );
 
-const enthusiastModel = new Schema({
-  accountType: { type: String },
-  name: { type: String },
-  email: { type: String },
-  liscenced: { type: Boolean },
-  mailingList: { type: Boolean },
-  password: { type: String },
-  telephone: { type: String },
-  wallet: { type: Object },
-  avatar: { type: String },
-});
+  return Enthusiast;
+};
 
-module.exports = mongoose.model("Enthusiast", enthusiastModel);
+module.exports = enthusiastSchema;

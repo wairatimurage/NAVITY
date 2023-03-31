@@ -1,16 +1,23 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const bookingSchema = (sequelize, Sequelize) => {
+  const Booking = sequelize.define(
+    "Booking",
+    {
+      BookingDetails: { type: Sequelize.JSON },
+      purchaseBody: { type: Sequelize.JSON },
+      client: { type: Sequelize.JSON  },
+      bookingDate: { type: Sequelize.DATE },
+      payment: { type: Sequelize.JSON  },
+      // additional: { type: String },
+      totalPayable: { type: Sequelize.INTEGER },
+      bookingFee: { type: Sequelize.INTEGER },
+      services: { type: Sequelize.ARRAY },
+      provider: { type: Sequelize.JSON  },
+      paymentMethod: { type: Sequelize.STRING },
+    },
+    { timestamps: true }
+  );
 
-const bookingModel = new Schema({
-  client: { type: Object },
-  bookingDate: { type: Date },
-  payment: { type: Object },
-  // additional: { type: String },
-  totalPayable: { type: Number },
-  bookingFee: { type: Number },
-  services: { type: Array },
-  provider: { type: Object },
-  paymentMethod: { type: String },
-});
+  return Booking;
+};
 
-module.exports = mongoose.model("Booking", bookingModel);
+module.exports = bookingSchema;

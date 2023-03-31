@@ -17,5 +17,10 @@
   "license": "ISC",
   "engines": {
     "node": "16.x"
+  },
+  "dependencies": {
+    "db-migrate": "^0.11.13",
+    "pg": "^8.10.0",
+    "sequelize": "^6.30.0"
   }
 }

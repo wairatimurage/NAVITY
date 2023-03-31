@@ -28,6 +28,7 @@ process.env.NODE_ENV === "production"
   ? console.log("production")
   : console.log("development");
 // eslint-disable-next-line no-unused-vars
+
 const db = mongoose.connect(
   MONGODB_URI,
   {
@@ -60,7 +61,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// console.log("secret", process.env.CLIENT_ID);
 // calling pasport
 app.use(
   session({
