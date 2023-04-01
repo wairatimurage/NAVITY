@@ -1,16 +1,16 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
-
-const quoteModel = new Schema({
-  name: { type: String },
-  email: { type: String },
-  telephone: { type: String },
-  location: { type: String },
-  service: { type: Object },
-  date: { type: Object },
+const quoteSchema = (sequelize, Sequelize) => {
+  const Quote = sequelize.define(
+    "Quote",
+    {
+  name: { type: Sequelize.STRING },
+  email: { type: Sequelize.STRING },
+  telephone: { type: Sequelize.STRING },
+  location: { type: Sequelize.STRING },
+  service: { type: Sequelize.JSON },
+  date: { type: Sequelize.JSON },
 });
 
 // service:{serviceType:{type: String}, details:{type:String}}
 // date:{from:{type:Date}, to:{type:Date}, details:{type:String}}
-
-module.exports = mongoose.model("Quote", quoteModel);
+};
+module.exports = quoteSchema;

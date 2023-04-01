@@ -28,8 +28,8 @@ db.ClientRequests = require("./clientRequestModel")(sequelize, Sequelize);
 db.Enthusiasts = require("./enthusiastModel")(sequelize, Sequelize);
 db.Institutions = require("./institutionModel")(sequelize, Sequelize);
 db.Payments = require("./paymentModel")(sequelize, Sequelize);
-// db.Pilots = require("./pilotModel")(sequelize, Sequelize);
-// db.Posts = require("./postModel")(sequelize, Sequelize);
-// db.Quotes = require("./quoteModel")(sequelize, Sequelize);
+db.Pilots = require("./pilotModel")(sequelize, Sequelize);
+db.Posts = require("./postModel")(sequelize, Sequelize);
+db.Quotes = require("./quoteModel")(sequelize, Sequelize);
 
 module.exports = db;

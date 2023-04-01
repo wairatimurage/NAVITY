@@ -1,15 +1,16 @@
-const { model, Schema } = require("mongoose");
-
-const postModel = new Schema({
-  id: { type: String, required: true },
-  title: { type: String, unique: true },
-  articleText: { type: String },
-  mainImage: { type: String },
-  stars: { type: Number, default: 0 },
-  images: { type: Array },
-  status: { type: String, required: true },
-  publishedOn: { type: Date, required: true },
-  updatedOn: { type: Date },
+const postSchema = (sequelize, Sequelize) => {
+  const Post = sequelize.define(
+    "Post",
+    {
+  id: { type: Sequelize.STRING, required: true },
+  title: { type: Sequelize.STRING, unique: true },
+  articleText: { type: Sequelize.STRING },
+  mainImage: { type: Sequelize.STRING },
+  stars: { type: Sequelize.INTEGER, default: 0 },
+  images: { type: Sequelize.ARRAY },
+  status: { type: Sequelize.STRING, required: true },
+  publishedOn: { type: Sequelize.DATE, required: true },
+  updatedOn: { type: Sequelize.DATE },
 });
-
-module.exports = model("Post", postModel);
+};
+module.exports = postSchema;

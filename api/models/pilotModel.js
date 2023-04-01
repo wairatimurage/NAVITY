@@ -1,25 +1,25 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
-
-const pilotModel = new Schema({
-  name: { type: String },
-  accountType: { type: String },
-  email: { type: String },
-  insured: { type: Boolean },
-  liscenced: { type: Boolean },
-  liscenceExpiry: { type: Date },
-  mailingList: { type: Boolean },
-  services: { type: Array },
-  professional: { type: Boolean },
-  telephone: { type: String },
-  password: { type: String },
-  website: { type: String },
-  avatar: { type: String },
-  socials: { type: Object },
-  bio: { type: Object },
-  location: { type: Array },
-  reviews: { type: Array },
-  wallet: { type: Object },
+const pilotSchema = (sequelize, Sequelize) => {
+  const Pilot = sequelize.define(
+    "Pilot",
+   {
+  name: { type: Sequelize.STRING },
+  accountType: { type: Sequelize.STRING },
+  email: { type: Sequelize.STRING },
+  insured: { type: Sequelize.BOOLEAN },
+  liscenced: { type: Sequelize.BOOLEAN },
+  liscenceExpiry: { type: Sequelize.DATE },
+  mailingList: { type: Sequelize.BOOLEAN },
+  services: { type: Sequelize.ARRAY },
+  professional: { type: Sequelize.BOOLEAN },
+  telephone: { type: Sequelize.STRING },
+  password: { type: Sequelize.STRING },
+  website: { type: Sequelize.STRING },
+  avatar: { type: Sequelize.STRING },
+  socials: { type: Sequelize.JSON },
+  bio: { type: Sequelize.JSON },
+  location: { type: Sequelize.ARRAY },
+  reviews: { type: Sequelize.ARRAY },
+  wallet: { type: Sequelize.JSON },
 });
 // TODO : add instance method to generate id
 // pilotModel.methods.insertId= function(){
@@ -46,5 +46,6 @@ const pilotModel = new Schema({
 //        }
 //     ]
 //  }
+};
 
-module.exports = mongoose.model("Pilot", pilotModel);
+module.exports = pilotSchema;
