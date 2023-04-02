@@ -5,23 +5,30 @@ const path = require("path");
 const { handleServerErrors } = require("./errorHandling");
 const { tinifyImage } = require("./tinify");
 const { uploadFile } = require("./s3Actions");
+const db = require("../models");
 const models = {
-  pilot: require("../models/pilotModel"),
-  enthusiast: require("../models/enthusiastModel"),
-  institution: require("../models/institutionModel"),
+  pilot: require("../models/pilotModel")(db.sequelize, db.Sequelize),
+  enthusiast: require("../models/enthusiastModel")(db.sequelize, db.Sequelize),
+  institution: require("../models/institutionModel")(
+    db.sequelize,
+    db.Sequelize
+  ),
 };
 
 const getUserByEmail = (email) => {
   let _user;
   const searchInCategory = async (category, email) => {
     const handleError = (err) => (err ? err : null);
-    await models[category].findOne({ email }, (err, user) => {
-      handleError(err);
-      if (user && user !== undefined) {
-        // eslint-disable-next-line no-unused-vars
-        _user = user;
-      }
-    });
+
+    await models[category]
+      .findOne({ email })
+      .then((user) => {
+        if (user && user !== undefined) {
+          // eslint-disable-next-line no-unused-vars
+          _user = user;
+        }
+      })
+      .catch((err) => handleError(err));
     return _user;
   };
 
@@ -35,23 +42,25 @@ const getUserByEmail = (email) => {
   });
 };
 
-const getUserById = (id) => {
+const getUserById = (_id) => {
   let _user;
-  const searchInCategory = async (category, id) => {
+  const searchInCategory = async (category, _id) => {
     const handleError = (err) => (err ? err : null);
-    await models[category].findById(id, (err, user) => {
-      handleError(err);
-      if (user && user !== undefined) {
-        // eslint-disable-next-line no-unused-vars
-        _user = user;
-      }
-    });
+    await models[category]
+      .findOne({ where: { _id } })
+      .then((user) => {
+        if (user && user !== undefined) {
+          // eslint-disable-next-line no-unused-vars
+          _user = user;
+        }
+      })
+      .catch((err) => handleError(err));
     return _user;
   };
 
-  const isPilot = searchInCategory("pilot", id);
-  const isInstitution = searchInCategory("institution", id);
-  const isEnthusiast = searchInCategory("enthusiast", id);
+  const isPilot = searchInCategory("pilot", _id);
+  const isInstitution = searchInCategory("institution", _id);
+  const isEnthusiast = searchInCategory("enthusiast", _id);
   return Promise.all([isEnthusiast, isPilot, isInstitution]).then((results) => {
     if (results[0]) {
       return results[0];
@@ -128,7 +137,6 @@ const updateProfileResponse = (_user, _host) => {
   if (process.env.NODE_ENV === "development") {
     let _new = _user.toJSON();
     _new.avatar = _host + _new.avatar;
-
     delete _new.password;
     delete _new.__v;
     return _new;

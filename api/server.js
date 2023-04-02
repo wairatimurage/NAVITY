@@ -8,16 +8,15 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const passport = require("passport");
 const session = require("express-session");
-// const methodOverride = require("method-override");
 const MongoStore = require("connect-mongo")(session);
 require("dotenv").config();
 
 // app variables and constants
 const app = express();
 const port = process.env.PORT || process.env.LOCAL_PORT || 2000;
-const MONGODB_URI = process.env.MONGODB_URI;
 
 // local imports
+const db = require("./models");
 const initializePassport = require("./utilities/passport-config");
 const sessionStore = new MongoStore({
   mongooseConnection: mongoose.connection,
@@ -29,20 +28,16 @@ process.env.NODE_ENV === "production"
   : console.log("development");
 // eslint-disable-next-line no-unused-vars
 
-const db = mongoose.connect(
-  MONGODB_URI,
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-  },
-  (err) => {
-    err
-      ? console.log(`there is a problem: ${err.message}`)
-      : console.log("Successfully connected");
-  }
-);
-mongoose.connection;
+//connect to database and create tables if they don't exist
+db.sequelize
+  .sync()
+  .then(() => {
+    console.log("Synced db.");
+  })
+  .catch((err) => {
+    console.log(err);
+    console.log("Failed to sync db: " + err.message);
+  });
 
 app.use(morgan("tiny"));
 app.use(express.json({ limit: "20MB" }));
@@ -76,11 +71,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 initializePassport(passport);
-// app.use(methodOverride("_method"));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "50MB" }));
-// app.use(express.static(path.join(__dirname, "pages")));
 app.use("", express.static(path.join(__dirname, "./images/avatars")));
 app.use("", express.static(path.join(__dirname, "../frontend/build")));
 

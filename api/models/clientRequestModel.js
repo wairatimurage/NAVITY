@@ -2,12 +2,20 @@ const clientRequestsSchema = (sequelize, Sequelize) => {
   const ClientRequest = sequelize.define(
     "ClientRequest",
     {
+      _id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: false,
+        primaryKey: true,
+      },
       location: { type: Sequelize.STRING },
       service: {
+        type: Sequelize.JSON,
         fromList: { type: Sequelize.STRING },
         additionalDetails: { type: Sequelize.STRING },
       },
       schedule: {
+        type: Sequelize.JSON,
         fromDate: { type: Sequelize.DATE },
         toDate: { type: Sequelize.DATE },
         additionalDetails: { type: Sequelize.STRING },

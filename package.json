@@ -9,7 +9,7 @@
     "prebuild": " npx browserslist@latest --update-db",
     "start": "cd api && npm start",
     "api:dev": "cd api && npm run start:dev",
-    "start:react": "cd frontend && npm start",
+    "client": "cd frontend && npm start",
     "build": "cd frontend && npm run build"
   },
   "keywords": [],

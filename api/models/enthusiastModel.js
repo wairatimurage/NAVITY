@@ -2,6 +2,12 @@ const enthusiastSchema = (sequelize, Sequelize) => {
   const Enthusiast = sequelize.define(
     "Enthusiast",
     {
+      _id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: false,
+        primaryKey: true,
+      },
       accountType: { type: Sequelize.STRING },
       name: { type: Sequelize.STRING },
       email: { type: Sequelize.STRING },

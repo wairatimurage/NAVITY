@@ -2,6 +2,12 @@ const paymentSchema = (sequelize, Sequelize) => {
   const Payment = sequelize.define(
     "Payment",
     {
+      _id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: false,
+        primaryKey: true,
+      },
       refId: { type: Sequelize.STRING, unique: true },
       order: { type: Sequelize.JSON, allowNull: true },
       clientId: { type: Sequelize.STRING, allowNull: true },

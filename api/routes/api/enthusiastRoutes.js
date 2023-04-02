@@ -30,14 +30,14 @@ const enthusiastRoutes = (Enthusiast) => {
           return res.status(201).json(enthusiast);
         })
         .catch((err) => {
-          (err) => console.log(err);
+          console.log(err);
         });
     });
 
   enthusiastRouter
     .route("/:email")
     .get((req, res) => {
-      Enthusiast.findOne()
+      Enthusiast.findOne({ where: { email: req.params.email } })
         .then((enthusiast) => {
           const newEnthusiast = enthusiast.toJSON();
           delete newEnthusiast.password;

@@ -5,26 +5,29 @@ const quoteRoutes = (Quote) => {
   quoteRouter
     .route("/")
     .get((req, res) => {
-      Quote.find((err, quotes) => {
-        if (err) {
-          return res.send(err);
-        }
-        const returnQuotes = quotes.map((quote) => {
-          const newQuote = quote.toJSON();
-          delete newQuote.__v;
-          return newQuote;
+      Quote.findAll()
+        .then((quotes) => {
+          const returnQuotes = quotes.map((quote) => {
+            const newQuote = quote.toJSON();
+            delete newQuote.__v;
+            return newQuote;
+          });
+          return res.status(304).json(returnQuotes);
+        })
+        .catch((err) => {
+          if (err) {
+            return res.send(err);
+          }
         });
-        return res.status(304).json(returnQuotes);
-      });
     })
     .post((req, res) => {
-      const quote = new Quote(req.body);
-      quote.save((err, quote) => {
-        if (err) {
+      Quote.create(req.body)
+        .then((quote) => {
+          res.status(201).json(quote);
+        })
+        .catch((err) => {
           res.send(err);
-        }
-        res.status(201).json(quote);
-      });
+        });
     });
 
   return quoteRouter;

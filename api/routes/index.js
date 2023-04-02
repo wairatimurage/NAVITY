@@ -1,18 +1,25 @@
 const express = require("express");
 const path = require("path");
+const db = require("../models");
 
 const router = express.Router();
-const Institution = require("../models/institutionModel");
-const Pilot = require("../models/pilotModel");
-const Enthusiasts = require("../models/enthusiastModel");
-const Booking = require("../models/bookingModel");
-const Quote = require("../models/quoteModel");
-const Payments = require("../models/paymentModel");
-const Post = require("../models/postModel");
+const Institution = require("../models/institutionModel")(
+  db.sequelize,
+  db.Sequelize
+);
+const Pilot = require("../models/pilotModel")(db.sequelize, db.Sequelize);
+const Enthusiasts = require("../models/enthusiastModel")(
+  db.sequelize,
+  db.Sequelize
+);
+const Booking = require("../models/bookingModel")(db.sequelize, db.Sequelize);
+const Quote = require("../models/quoteModel")(db.sequelize, db.Sequelize);
+const Payments = require("../models/paymentModel")(db.sequelize, db.Sequelize);
+const Post = require("../models/postModel")(db.sequelize, db.Sequelize);
 const pilotRoutes = require("./api/pilotRoutes")(Pilot, Booking);
 const institutionRoutes = require("./api/institutionsRoutes")(Institution);
 const enthusiastsRoutes = require("./api/enthusiastRoutes")(Enthusiasts);
-const authRoutes = require("./api/authRoutes")();
+const authRoutes = require("./api/authRoutes")(Pilot, Institution, Enthusiasts);
 const paymentRoutes = require("./api/paymentRoutes")(Payments, Booking);
 const quoteRoutes = require("./api/quoteRoutes")(Quote);
 const postRoutes = require("./api/postRoutes")(Post);

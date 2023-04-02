@@ -13,11 +13,6 @@ const passport = require("passport");
 
 const pathToKey = path.join(__dirname, "../../cryptography/id_rsa_priv.pem");
 const PRIV_KEY = fs.readFileSync(pathToKey, "utf-8");
-const models = {
-  pilot: require("../../models/pilotModel"),
-  enthusiast: require("../../models/enthusiastModel"),
-  institution: require("../../models/institutionModel"),
-};
 
 const issueJwt = (id) => {
   const expiresIn = "2d";
@@ -32,8 +27,14 @@ const issueJwt = (id) => {
   return { token: `Bearer ${signedToken}`, expires: expiresIn };
 };
 
-const authRoutes = () => {
+const authRoutes = (Pilot, Institution, Enthusiasts) => {
   const authRouter = express.Router();
+  const models = {
+    pilot: Pilot,
+    enthusiast: Enthusiasts,
+    institution: Institution,
+  };
+
   authRouter.route("/login").post(async (req, res) => {
     const user = await getUserByEmail(req.body.email);
     if (!user) {
@@ -69,17 +70,21 @@ const authRoutes = () => {
       }
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(req.body.password, salt);
-      const user = new models[req.body.accountType]({
-        ...req.body,
-        password: hashedPassword,
-      });
+
       // TODO: add instance method to generate a new  id
-      user.save((err) => console.log("error", err));
-      const jwtToken = issueJwt(user._id);
-      const returnUser = user.toJSON();
-      delete returnUser.password;
-      // delete returnUser._id;
-      res.header("Authorization", jwtToken.token).json(returnUser);
+      models[req.body.accountType]
+        .create({
+          ...req.body,
+          password: hashedPassword,
+        })
+        .then((user) => {
+          const jwtToken = issueJwt(user._id);
+          const returnUser = user.toJSON();
+          delete returnUser.password;
+          // delete returnUser._id;
+          res.header("Authorization", jwtToken.token).json(returnUser);
+        })
+        .catch((err) => console.log("error", err));
     } catch (error) {
       res.json({ error: error.message, code: error.name });
     }

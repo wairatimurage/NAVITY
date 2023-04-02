@@ -81,7 +81,7 @@ const ideasRouter = (Ideas) => {
     .route("/")
     .get((req, res) => {
       const _host = req.protocol + "://" + req.get("host") + "/";
-      Ideas.find()
+      Ideas.findall()
         .then((_posts) => {
           const _newIdeas = _posts.map(
             async (_post) => await updateIdeasResponse(_post, _host)
@@ -97,8 +97,10 @@ const ideasRouter = (Ideas) => {
     })
     .post(checkAuth, verifyAdmin, async (req, res) => {
       try {
-        const _alreadyExists = await Ideas.find({
-          title: req.body.title,
+        const _alreadyExists = await Ideas.findAll({
+          where: {
+            title: req.body.title,
+          },
         }).then((_res) => _res);
         if (_alreadyExists.length) {
           res
@@ -149,14 +151,19 @@ const ideasRouter = (Ideas) => {
             _host
           );
 
-          Ideas.findOneAndUpdate(
-            {
+          Ideas.findOne({
+            where: {
               id: req.body.id,
             },
-            { ..._newIdea }
-          ).then((_saved) => {
-            console.log(_saved);
-            res.status(200).json({ message: "Article successfully updated." });
+          }).then((_idea) => {
+            if (_idea) {
+              _idea.update({ ..._newIdea }).then((_saved) => {
+                console.log(_saved);
+                res
+                  .status(200)
+                  .json({ message: "Article successfully updated." });
+              });
+            }
           });
         }
       } catch (_err) {
@@ -172,7 +179,7 @@ const ideasRouter = (Ideas) => {
 
   ideasRoutes.route("/published").get((req, res) => {
     const _host = req.protocol + "://" + req.get("host") + "/";
-    Ideas.find()
+    Ideas.findAll()
       .then((_posts) => {
         const _newIdeas = _posts
           .filter((_post) => _post.status === "published")
@@ -191,7 +198,7 @@ const ideasRouter = (Ideas) => {
   });
   ideasRoutes.route("/draft").get((req, res) => {
     const _host = req.protocol + "://" + req.get("host") + "/";
-    Ideas.find()
+    Ideas.findAll()
       .then((_posts) => {
         const _newIdeas = _posts
           .filter((_post) => _post.status === "draft")
@@ -210,7 +217,7 @@ const ideasRouter = (Ideas) => {
   });
   ideasRoutes.route("/top-rated").get((req, res) => {
     // TODO: top rated
-    Ideas.find()
+    Ideas.findAll()
       .then((ideas) => {
         const _host = req.protocol + "://" + req.get("host") + "/";
         const _newIdeas = ideas
@@ -225,30 +232,31 @@ const ideasRouter = (Ideas) => {
   });
 
   ideasRoutes.route("/star").patch(checkAuth, (req, res) => {
-    Ideas.findOneAndUpdate(
-      { _id: req.body._id },
-      {
-        $set: {
-          stars: (req.body.stars += 1),
-        },
-      },
-      { new: true, runValidators: true, upsert: true }
-    )
-      .then((_res) => {
-        console.log(_res);
-        res.status(201).json({ message: "Succesfully starred." });
-      })
-      .catch((_err) => {
-        handleServerErrors(_err);
-        res.status(500).json({
-          errorMessage: "Sorry, an error occured. Please try again.",
-        });
-      });
+    Ideas.findOne({ where: { _id: req.body._id } }).then((_ideas) => {
+      if (_ideas) {
+        _ideas
+          .update({
+            stars: (req.body.stars += 1),
+          })
+          .then((_res) => {
+            console.log(_res);
+            res.status(201).json({ message: "Succesfully starred." });
+          })
+          .catch((_err) => {
+            handleServerErrors(_err);
+            res.status(500).json({
+              errorMessage: "Sorry, an error occured. Please try again.",
+            });
+          });
+      }
+    });
   });
 
   ideasRoutes.route("/:title").get((req, res) => {
     Ideas.findOne({
-      title: new RegExp("\\b" + req.params.title + "\\b", "i"),
+      where: {
+        title: new RegExp("\\b" + req.params.title + "\\b", "i"),
+      },
     })
       .then((_post) => res.status(201).json(_post))
       .catch((_err) => {

@@ -44,7 +44,6 @@ const flutterwaveCall = async (_data) => {
       throw new CustomError(_data.message, "paymentError");
     })
     .catch((_err) => {
-
       console.log(_err);
       throw new CustomError(
         "Problem connecting to Payment System.",
@@ -83,7 +82,18 @@ const paymentRoutes = (Payment, Booking) => {
       // const _user = req.user.toJSON();
       const _refId = uuidv4();
 
-      const _newPayment = new Payment({
+      // const _newPayment = new Payment({
+      //   clientId: req.body.client.email,
+      //   order: { ...req.body },
+      //   refId: _refId,
+      //   initiatedAt: new Date(),
+      //   completed: false,
+      //   currency: "KES",
+      //   bookingFee: req.body.bookingFee,
+      //   payment: { method: req.body.paymentMethod },
+      // });
+
+      const _newPayment = {
         clientId: req.body.client.email,
         order: { ...req.body },
         refId: _refId,
@@ -92,43 +102,47 @@ const paymentRoutes = (Payment, Booking) => {
         currency: "KES",
         bookingFee: req.body.bookingFee,
         payment: { method: req.body.paymentMethod },
-      });
+      };
 
       //   check for duplicate transactions
       const openPayment = async () => {
-        return await Payment.find({
-          clientId: req.body.client.email,
+        return Payment.findOne({
+          where: {
+            clientId: req.body.client.email,
+          },
         }).then((_results) => {
-          const _openPayments = _results.find(
+          const _openPayments = _results.findAll(
             (_payment) =>
               !_payment.completed &&
-              // _payment.totalPayable === _newPayment.totalPayable &&
               _payment.order.paymentMethod === req.body.paymentMethod &&
               _payment.order.provider.email === req.body.provider.email
           );
-          // console.log("open check: ", _openPayments);
           if (_openPayments) {
-            // console.log(
-            //   "pre check: ",
-            //   // _results,
-            //   _results.length > 0,
-            //   _results.length
-            // );
             return res
               .status(201)
               .json({ redirectUrl: _openPayments.payment.link });
-            // TODO: log error
-            // throw new CustomError(
-            //   "Similar transaction currently underway.",
-            //   "duplicateTransaction"
-            // );
           }
 
           return false;
         });
-      };
+        // return await Payment.find({
+        //   clientId: req.body.client.email,
+        // }).then((_results) => {
+        //   const _openPayments = _results.find(
+        //     (_payment) =>
+        //       !_payment.completed &&
+        //       _payment.order.paymentMethod === req.body.paymentMethod &&
+        //       _payment.order.provider.email === req.body.provider.email
+        //   );
+        //   if (_openPayments) {
+        //     return res
+        //       .status(201)
+        //       .json({ redirectUrl: _openPayments.payment.link });
+        //   }
 
-      await _newPayment.validateSync();
+        //   return false;
+        // });
+      };
 
       if (!(await openPayment())) {
         const _flutterwaveData = {
@@ -144,27 +158,28 @@ const paymentRoutes = (Payment, Booking) => {
           totalPayable: _newPayment.totalPayable,
           bookingFee: _newPayment.bookingFee,
         };
-        
-        const _savedPayment = await _newPayment
-          .save()
-          .then(async (_saved) => _saved);
+
+        const _savedPayment = await Payment.create(_newPayment).then(
+          async (_saved) => _saved
+        );
 
         console.log("saved: ", _savedPayment);
         const _flutterwave_call = await flutterwaveCall(_flutterwaveData);
         const _updatedPayment = _savedPayment.toJSON();
         _updatedPayment.payment.link = _flutterwave_call.data.link;
 
-        Payment.findOneAndUpdate(
-          { refId: _savedPayment.refId },
-          { $set: _updatedPayment }
-        ).then(() => {
-          // console.log("saved: ", _res.payment.link);
-          return res
-            .status(201)
-            .json({ redirectUrl: _flutterwave_call.data.link });
-        });
+        Payment.findOne({ where: { refId: _savedPayment.refId } }).then(
+          (_payment) => {
+            if (_payment) {
+              _payment.update({ ..._updatedPayment }).then(() => {
+                return res
+                  .status(201)
+                  .json({ redirectUrl: _flutterwave_call.data.link });
+              });
+            }
+          }
+        );
       }
-
     } catch (_err) {
       handlePaymentErrors(_err);
       return res.status(421).json({
@@ -177,11 +192,12 @@ const paymentRoutes = (Payment, Booking) => {
   });
 
   paymentRouter.route("/already-paid").post((req, res) => {
-    console.log("sss: ", req.body);
     req.user = {};
     // TODO: use req.user id
-    Payment.find({
-      clientId: req.body.client.email,
+    Payment.findAll({
+      where: {
+        clientId: req.body.client.email,
+      },
     })
       .then(async (_results) => {
         const _openPayments = _results.find(
@@ -196,18 +212,18 @@ const paymentRoutes = (Payment, Booking) => {
             _openPayments.refId
           );
           _openPayments.order.payment.refId = _openPayments.refId;
-          await Booking.findOne({ "payment.refId": _openPayments.refId }).then(
-            (_res) => {
-              if (_res) {
-                return res.status(201).json({
-                  message:
-                    "An order has already been placed with similar details. Place new order or contact support for assistance",
-                  order: _res,
-                });
-              }
-              return res.status(201).json(_openPayments.order);
+          await Booking.findOne({
+            where: { "payment.refId": _openPayments.refId },
+          }).then((_res) => {
+            if (_res) {
+              return res.status(201).json({
+                message:
+                  "An order has already been placed with similar details. Place new order or contact support for assistance",
+                order: _res,
+              });
             }
-          );
+            return res.status(201).json(_openPayments.order);
+          });
         } else {
           res.json({
             errorMessage: "No matching payment found. Please contact support.",
@@ -222,35 +238,84 @@ const paymentRoutes = (Payment, Booking) => {
           code: "verificationError",
         });
       });
+    // Payment.find({
+    //   clientId: req.body.client.email,
+    // })
+    // .then(async (_results) => {
+    //   const _openPayments = _results.find(
+    //     (_payment) =>
+    //       _payment.completed && _payment.totalPayable === req.body.payable
+    //   );
+    //   if (_openPayments) {
+    //     _openPayments.toJSON();
+    //     console.log(
+    //       "some: ",
+    //       _openPayments.order.payment.refId,
+    //       _openPayments.refId
+    //     );
+    //     _openPayments.order.payment.refId = _openPayments.refId;
+    //     await Booking.findOne({ "payment.refId": _openPayments.refId }).then(
+    //       (_res) => {
+    //         if (_res) {
+    //           return res.status(201).json({
+    //             message:
+    //               "An order has already been placed with similar details. Place new order or contact support for assistance",
+    //             order: _res,
+    //           });
+    //         }
+    //         return res.status(201).json(_openPayments.order);
+    //       }
+    //     );
+    //   } else {
+    //     res.json({
+    //       errorMessage: "No matching payment found. Please contact support.",
+    //       code: "noPayment",
+    //     });
+    //   }
+    // })
+    // .catch((_err) => {
+    //   handlePaymentErrors(_err);
+    //   res.json({
+    //     errorMessage: "Sorry an error occured.",
+    //     code: "verificationError",
+    //   });
+    // });
   });
+
   paymentRouter.route("/:id").post(checkAuth, async (req, res) => {
-    Payment.findById(req.params.id)
+    Payment.findOne({ where: { id: req.params.id } })
       .then(async (_result) => {
         const _verificationResponse = await flutterwaveVerification(
           req.body.transaction_id
         );
-        console.log("got here: ",);
+
         if (_result.refId === _verificationResponse.data.tx_ref) {
-          _result.completed = true;
-          _result.payment = {
-            ..._result.payment,
-            gateway: _verificationResponse.data,
-          };
-          await _result.save((_err, _savedData) => {
-            if (_err) throw _err;
-            // _savedData.payment.refId = _savedData.refId;
-            console.log(_savedData);
-            return res.status(201).json(_result.order);
-          });
-        } else {
-          Payment.findOne(
-            { refId: _verificationResponse.data.tx_ref },
-            async (_err, _res) => {
+          await _result
+            .update({
+              completed: true,
+              payment: {
+                ..._result.payment,
+                gateway: _verificationResponse.data,
+              },
+            })
+            .then((_savedData) => {
+              console.log(_savedData);
+              return res.status(201).json(_result.order);
+            })
+            .catch((_err) => {
               if (_err) throw _err;
+            });
+        } else {
+          Payment.findOne({
+            where: { refId: _verificationResponse.data.tx_ref },
+          })
+            .then(async (_res) => {
               if (_res) {
                 // TODO: find order
                 await Booking.findOne({
-                  "payment.refId": _result.refId,
+                  where: {
+                    "payment.refId": _result.refId,
+                  },
                 }).then((_res) => {
                   if (_res) {
                     return res.status(201).json({
@@ -270,8 +335,10 @@ const paymentRoutes = (Payment, Booking) => {
                   "Sorry, your transaction id is invalid. Please contact support fo assistance.",
                 code: "mismatchedCode",
               });
-            }
-          );
+            })
+            .catch((_err) => {
+              if (_err) throw _err;
+            });
         }
       })
       .catch((_err) => {
