@@ -2,7 +2,7 @@
 
 ## Tools and setup
 
-### MONGODB
+### POSTGRES
 
 [install and setup postgres](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
 
